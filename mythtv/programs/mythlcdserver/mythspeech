@@ -1,0 +1,28 @@
+#!/bin/bash
+# Set up a runtime directory for logs and core dumps
+RUNDIR=$HOME/mythspeech
+mkdir -p $RUNDIR
+
+# Specify the log file
+LOG=$RUNDIR/mythlcdserver.log
+# Move old log file to $LOG.day-of-week
+[ -f $LOG ] && mv -f $LOG $LOG.`date '+%w'`
+# Redirect all output to the logfile
+exec >> $LOG 2>&1
+
+# Enable core dumps, in case there are bugs
+ulimit -c unlimited
+# Make sure if there are core dumps they wind up in $RUNDIR
+cd $RUNDIR
+
+# Kill any running mythlcdserver process
+pkill mythlcdserver
+# Wait for mysql to start
+while [ ! -S /var/run/mysqld/mysqld.sock ]
+do
+date "+%F %T Waiting for mysql to start"
+sleep 1
+done
+
+# Start the desired mythlcdserver
+nohup $HOME/bin/mythlcdserver -x 10 &
