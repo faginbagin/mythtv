@@ -13,6 +13,7 @@
 
 #include "serverpool.h"
 #include "lcdprocclient.h"
+#include "speak.h"
 
 /*
   control how much debug info we get
@@ -64,6 +65,7 @@ class LCDServer : public QObject
   private:
 
     LCDProcClient   *m_lcd;
+    Speak           *m_speak;
     ServerPool      *m_serverPool;
     QTcpSocket      *m_lastSocket;  // last socket we received data from
 

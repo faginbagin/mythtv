@@ -84,6 +84,12 @@ LCDServer::LCDServer(int port, QString message, int messageTime)
         delete m_lcd;
         m_lcd = NULL;
     }
+    m_speak = new Speak(this);
+    if (!m_speak->init())
+    {
+        delete m_speak;
+        m_speak = NULL;
+    }
 
     m_serverPool = new ServerPool();
     connect(m_serverPool, SIGNAL(newConnection(QTcpSocket*)),
@@ -115,6 +121,8 @@ void LCDServer::newConnection(QTcpSocket *socket)
 
     if (m_lcd)
         m_lcd->switchToTime();
+    if (m_speak)
+        m_speak->switchToTime();
 }
 
 void LCDServer::endConnection(void)
@@ -125,7 +133,7 @@ void LCDServer::endConnection(void)
         socket->close();
         socket->deleteLater();
         if (debug_level > 0)
-            LOG(VB_NETWORK, LOG_INFO, "LCDServer: close connection");
+            LOG(VB_GENERAL, LOG_INFO, "LCDServer: close connection");
     }
 
     if (m_lastSocket == socket)
@@ -140,6 +148,8 @@ void LCDServer::readSocket()
     while(socket->canReadLine())
     {
         QString incoming_data = socket->readLine();
+        if (debug_level > 0)
+            LOG(VB_GENERAL, LOG_INFO, "LCDServer: incoming=" + incoming_data);
         incoming_data = incoming_data.replace( QRegExp("\n"), "" );
         incoming_data = incoming_data.replace( QRegExp("\r"), "" );
         incoming_data.simplified();
@@ -248,12 +258,16 @@ void LCDServer::parseTokens(const QStringList &tokens, QTcpSocket *socket)
     {
         if (m_lcd)
             m_lcd->stopAll();
+        if (m_speak)
+            m_speak->stopAll();
     }
     else if (tokens[0] == "RESET")
     {
         // reset lcd & reload settings
         if (m_lcd)
             m_lcd->reset();
+        if (m_speak)
+            m_speak->reset();
     }
     else
     {
@@ -308,6 +322,11 @@ void LCDServer::sendConnected(QTcpSocket *socket)
         nWidth = m_lcd->getLCDWidth();
         nHeight = m_lcd->getLCDHeight();
     }
+    else if (m_speak)
+    {
+        nWidth = 20;
+        nHeight = 4;
+    }
 
     sWidth = sWidth.setNum(nWidth);
     sHeight = sHeight.setNum(nHeight);
@@ -322,6 +341,8 @@ void LCDServer::switchToTime(QTcpSocket *socket)
 
     if (m_lcd)
         m_lcd->switchToTime();
+    if (m_speak)
+        m_speak->switchToTime();
 
     sendMessage(socket, "OK");
 }
@@ -343,6 +364,8 @@ void LCDServer::switchToMusic(const QStringList &tokens, QTcpSocket *socket)
 
     if (m_lcd)
         m_lcd->switchToMusic(tokens[1], tokens[2], tokens[3]);
+    if (m_speak)
+        m_speak->switchToMusic(tokens[1], tokens[2], tokens[3]);
 
     sendMessage(socket, "OK");
 }
@@ -414,6 +437,8 @@ void LCDServer::switchToGeneric(const QStringList &tokens, QTcpSocket *socket)
 
     if (m_lcd)
         m_lcd->switchToGeneric(&items);
+    if (m_speak)
+        m_speak->switchToGeneric(&items);
 
     sendMessage(socket, "OK");
 }
@@ -435,6 +460,8 @@ void LCDServer::switchToChannel(const QStringList &tokens, QTcpSocket *socket)
 
     if (m_lcd)
         m_lcd->switchToChannel(tokens[1], tokens[2], tokens[3]);
+    if (m_speak)
+        m_speak->switchToChannel(tokens[1], tokens[2], tokens[3]);
 
     sendMessage(socket, "OK");
 }
@@ -456,6 +483,8 @@ void LCDServer::switchToVolume(const QStringList &tokens, QTcpSocket *socket)
 
     if (m_lcd)
         m_lcd->switchToVolume(tokens[1]);
+    if (m_speak)
+        m_speak->switchToVolume(tokens[1]);
 
     sendMessage(socket, "OK");
 }
@@ -467,6 +496,8 @@ void LCDServer::switchToNothing(QTcpSocket *socket)
 
     if (m_lcd)
         m_lcd->switchToNothing();
+    if (m_speak)
+        m_speak->switchToNothing();
 
     sendMessage(socket, "OK");
 }
@@ -569,6 +600,8 @@ void LCDServer::switchToMenu(const QStringList &tokens, QTcpSocket *socket)
 
     if (m_lcd)
         m_lcd->switchToMenu(&items, appName, bPopup);
+    if (m_speak)
+        m_speak->switchToMenu(&items, appName, bPopup);
 
     sendMessage(socket, "OK");
 }
@@ -601,6 +634,8 @@ void LCDServer::setChannelProgress(const QStringList &tokens, QTcpSocket *socket
 
     if (m_lcd)
         m_lcd->setChannelProgress(tokens[1], progress);
+    if (m_speak)
+        m_speak->setChannelProgress(tokens[1], progress);
 
     sendMessage(socket, "OK");
 }
@@ -642,6 +677,8 @@ void LCDServer::setGenericProgress(const QStringList &tokens, QTcpSocket *socket
 
     if (m_lcd)
         m_lcd->setGenericProgress(busy, progress);
+    if (m_speak)
+        m_speak->setGenericProgress(busy, progress);
 
     sendMessage(socket, "OK");
 }
@@ -674,6 +711,8 @@ void LCDServer::setMusicProgress(const QStringList &tokens, QTcpSocket *socket)
 
     if (m_lcd)
         m_lcd->setMusicProgress(tokens[1], progress);
+    if (m_speak)
+        m_speak->setMusicProgress(tokens[1], progress);
 
     sendMessage(socket, "OK");
 }
@@ -715,6 +754,8 @@ void LCDServer::setMusicProp(const QStringList &tokens, QTcpSocket *socket)
         }
         if (m_lcd)
             m_lcd->setMusicShuffle (state);
+        if (m_speak)
+            m_speak->setMusicShuffle (state);
     }
     else if (tokens[1] == "REPEAT")
     {
@@ -738,6 +779,8 @@ void LCDServer::setMusicProp(const QStringList &tokens, QTcpSocket *socket)
         }
         if (m_lcd)
             m_lcd->setMusicRepeat (state);
+        if (m_speak)
+            m_speak->setMusicRepeat (state);
     }
     else
     {
@@ -778,6 +821,8 @@ void LCDServer::setVolumeLevel(const QStringList &tokens, QTcpSocket *socket)
 
     if (m_lcd)
         m_lcd->setVolumeLevel(progress);
+    if (m_speak)
+        m_speak->setVolumeLevel(progress);
 
     sendMessage(socket, "OK");
 }

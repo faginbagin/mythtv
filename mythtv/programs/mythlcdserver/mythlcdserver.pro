@@ -6,12 +6,15 @@ TEMPLATE = app
 CONFIG += thread
 TARGET = mythlcdserver
 target.path = $${PREFIX}/bin
+LIBS += -lspeechd
 
 INSTALLS += target
 
 HEADERS += lcdserver.h  lcdprocclient.h commandlineparser.h
+HEADERS += speak.h
 
 SOURCES += main.cpp lcdserver.cpp lcdprocclient.cpp commandlineparser.cpp
+SOURCES += speak.cpp
 
 QT += network xml sql
 
