@@ -85,7 +85,7 @@ void Speak::switchToMusic(const QString &artist, const QString &album, const QSt
     if (debug_level > 0)
         LOG(VB_GENERAL, LOG_INFO, "Speak: switchToMusic artist=" + artist + " album=" + album + " track=" + track + " speakText=" + speakText);
 
-    spd_say(m_spdconn, SPD_TEXT, speakText.toUtf8());
+    speak(speakText);
 }
 
 void Speak::setMusicProgress(QString time, float value)
@@ -117,7 +117,7 @@ void Speak::switchToChannel(QString channum, QString title, QString subtitle)
     if (debug_level > 0)
         LOG(VB_GENERAL, LOG_INFO, "Speak: switchToChannel channum=" + channum + " title=" + title + " subtitle=" + subtitle + " speakText=" + speakText);
 
-    spd_say(m_spdconn, SPD_TEXT, speakText.toUtf8());
+    speak(speakText);
 }
 
 void Speak::setChannelProgress(const QString &time, float value)
@@ -161,6 +161,10 @@ void Speak::switchToMenu(QList<LCDMenuItem> *menuItems, QString menu,
                 menu = "MYTH Recording Options";
             else if (curItem->ItemName() == "Subtitles")
                 menu = "MYTH Playback";
+            else if (curItem->ItemName() == "No - Exit, Stop Playing")
+                menu = "MYTH Exit Music Player";
+            else if (curItem->ItemName() == "Set Shuffle Mode")
+                menu = "MYTH Music Actions";
         }
         if (!menu.isEmpty() && selectedItem != NULL)
             break;
@@ -203,7 +207,6 @@ void Speak::switchToMenu(QList<LCDMenuItem> *menuItems, QString menu,
 
     m_prevMenu = menu;
     m_prevSelected = selectedText;
-    m_timer.start();
 
     // Filter out undesired characters
     // Two tildes appear in recording items, separating title - subtitle from time
@@ -216,7 +219,7 @@ void Speak::switchToMenu(QList<LCDMenuItem> *menuItems, QString menu,
         LOG(VB_GENERAL, LOG_INFO, "Speak: switchToMenu menu=" + menu + " selected=" + selectedText + " speakText=" + speakText);
     }
 
-    spd_say(m_spdconn, SPD_TEXT, speakText.toUtf8());
+    speak(speakText);
 }
 
 void Speak::switchToGeneric(QList<LCDTextItem> *textItems)
@@ -248,6 +251,37 @@ void Speak::switchToNothing()
     if (debug_level > 0)
         LOG(VB_GENERAL, LOG_INFO, "Speak: switchToNothing");
     stopAll();
+}
+
+
+void Speak::speak(const QString& speakText)
+{
+    // Ignore empty strings, they cause a thread deadlock
+    if (speakText.isEmpty())
+    {
+        if (debug_level > 0)
+        {
+            LOG(VB_GENERAL, LOG_INFO, "Speak: speak empty speakText");
+            return;
+        }
+    }
+
+    // Mythfrontend somtimes sends the same message more than once in quick succession
+    // this code ignores the duplicates
+    if (speakText == m_lastSpokenText)
+    {
+        if (m_timer.isValid() && m_timer.elapsed() < 200)
+        {
+            if (debug_level > 0)
+            {
+                LOG(VB_GENERAL, LOG_INFO, "Speak: speak duplicate speakText=" + speakText);
+                return;
+            }
+        }
+    }
+    m_lastSpokenText = speakText;
+    m_timer.start();
+    spd_say(m_spdconn, SPD_TEXT, speakText.toUtf8());
 }
 
 /* vim: set expandtab tabstop=4 shiftwidth=4: */

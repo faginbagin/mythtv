@@ -49,10 +49,12 @@ class Speak : public QObject
     void switchToNothing();
 
 private:
+    void speak(const QString &speakText);
     SPDConnection* m_spdconn;
     QElapsedTimer m_timer;
     QString m_prevMenu;
     QString m_prevSelected;
+    QString m_lastSpokenText;
 };
 
 #endif

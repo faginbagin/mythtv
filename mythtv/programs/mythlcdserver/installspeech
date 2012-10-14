@@ -1,0 +1,3 @@
+mkdir -p $HOME/bin
+cp -p mythlcdserver mythspeech $HOME/bin
+grep mythspeech $HOME/.xprofile || cat xprofile >> $HOME/.xprofile
