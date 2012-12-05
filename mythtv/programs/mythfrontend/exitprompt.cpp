@@ -62,16 +62,7 @@ bool DBusHalt(void)
 
 void ExitPrompter::halt()
 {
-
-    QString halt_cmd = gContext->GetSetting("HaltCommand","");
-    if (!halt_cmd.isEmpty()) /* Use user specified command if it exists */
-    {
-        myth_system(halt_cmd);
-    } else if (!DBusHalt()) /* If supported, use DBus to shutdown */
-    {
-        myth_system("sudo /sbin/halt -p"); 
-    }
-
+    DBusHalt();
 }
 
 bool DBusReboot(void)
@@ -118,16 +109,7 @@ bool DBusReboot(void)
 
 void ExitPrompter::reboot()
 {
-
-    QString reboot_cmd = gContext->GetSetting("RebootCommand","");
-    if (!reboot_cmd.isEmpty()) /* Use user specified command if it exists */
-    {
-        myth_system(reboot_cmd);
-    } else if (!DBusReboot()) /* If supported, use DBus to reboot */
-    {
-        myth_system("sudo /sbin/reboot");
-    }
-
+    DBusReboot();
 }
 
 void ExitPrompter::handleExit()

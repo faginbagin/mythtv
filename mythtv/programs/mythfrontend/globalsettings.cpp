@@ -2249,30 +2249,6 @@ static HostCheckBox *NoPromptOnExit()
     return gc;
 }
 
-static HostLineEdit *RebootCommand()
-{
-    HostLineEdit *ge = new HostLineEdit("RebootCommand");
-    ge->setLabel(QObject::tr("Reboot command"));
-    ge->setValue("reboot");
-    ge->setHelpText(QObject::tr("Optional. Script to run if you select "
-                    "the reboot option from the exit menu, if the option "
-                    "is displayed. You must configure an exit key to "
-                    "display the exit menu."));
-    return ge;
-}
-
-static HostLineEdit *HaltCommand()
-{
-    HostLineEdit *ge = new HostLineEdit("HaltCommand");
-    ge->setLabel(QObject::tr("Halt command"));
-    ge->setValue("halt");
-    ge->setHelpText(QObject::tr("Optional. Script to run if you select "
-                    "the shutdown option from the exit menu, if the option "
-                    "is displayed. You must configure an exit key to "
-                    "display the exit menu."));
-    return ge;
-}
-
 static HostLineEdit *LircDaemonDevice()
 {
     HostLineEdit *ge = new HostLineEdit("LircSocket");
@@ -4195,8 +4171,6 @@ MainGeneralSettings::MainGeneralSettings()
         new VerticalConfigurationGroup(true, true, false, false);
     shutdownSettings->setLabel(QObject::tr("Shutdown/Reboot Settings"));
     shutdownSettings->addChild(OverrideExitMenu());
-    shutdownSettings->addChild(HaltCommand());
-    shutdownSettings->addChild(RebootCommand());
     exit->addChild(ehor0);
     exit->addChild(shutdownSettings);
     addChild(exit);
