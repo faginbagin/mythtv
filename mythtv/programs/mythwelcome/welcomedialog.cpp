@@ -443,7 +443,7 @@ void WelcomeDialog::runMythFillDatabase()
                                           "mythfilldatabase");
     QString mfarg = gContext->GetSetting("MythFillDatabaseArgs", "");
     QString mflog = gContext->GetSetting("MythFillDatabaseLog",
-                                         "/var/log/mythfilldatabase.log");
+                                         "/var/log/mythtv/mythfilldatabase.log");
 
     if (mflog.isEmpty())
         command = QString("%1 %2").arg(mfpath).arg(mfarg);

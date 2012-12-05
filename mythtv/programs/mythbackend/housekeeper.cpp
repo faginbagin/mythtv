@@ -326,7 +326,7 @@ void HouseKeeper::RunMFD(void)
                                           "mythfilldatabase");
     QString mfarg = gContext->GetSetting("MythFillDatabaseArgs", "");
     QString mflog = gContext->GetSetting("MythFillDatabaseLog",
-                                         "/var/log/mythfilldatabase.log");
+                                         "/var/log/mythtv/mythfilldatabase.log");
 
     if (mfpath == "mythfilldatabase")
         mfpath = GetInstallPrefix() + "/bin/mythfilldatabase";
