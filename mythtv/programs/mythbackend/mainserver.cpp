@@ -4804,6 +4804,9 @@ void MainServer::connectionClosed(MythSocket *socket)
         }
         else if (sock == socket)
         {
+            list<uint> disconnectedSlaves;
+            bool needsReschedule = false;
+    
             if (ismaster && pbs->isSlaveBackend())
             {
                 VERBOSE(VB_IMPORTANT,QString("Slave backend: %1 no longer connected")
@@ -4820,12 +4823,11 @@ void MainServer::connectionClosed(MythSocket *socket)
                             isFallingAsleep = false;
 
                         elink->SetSocket(NULL);
-                        if (m_sched)
-                            m_sched->SlaveDisconnected(elink->GetCardID());
+                        if (m_sched) disconnectedSlaves.push_back(elink->GetCardID());
                     }
                 }
                 if (m_sched && !isFallingAsleep)
-                    m_sched->Reschedule(0);
+                    needsReschedule = true;
 
                 QString message = QString("LOCAL_SLAVE_BACKEND_OFFLINE %1")
                                           .arg(pbs->getHostname());
@@ -4879,6 +4881,13 @@ void MainServer::connectionClosed(MythSocket *socket)
                 VERBOSE(VB_IMPORTANT, "Playback sock still exists?");
 
             sockListLock.unlock();
+            for (list<uint>::iterator p = disconnectedSlaves.begin() ;
+                p != disconnectedSlaves.end() ; p++) {
+              if (m_sched) m_sched->SlaveDisconnected(*p);
+            }
+
+            if (m_sched && needsReschedule)
+                m_sched->Reschedule(0);
 
             pbs->DownRef();
             return;
