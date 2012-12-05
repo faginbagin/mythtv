@@ -1,0 +1,7 @@
+# export CFLAGS="-g -O2"
+export CFLAGS="-g"
+export CPPFLAGS=""
+export CXXFLAGS="$CFLAGS"
+export FFLAGS="$CFLAGS"
+export LDFLAGS="-Wl,-Bsymbolic-functions"
+./configure --compile-type=debug --prefix=$HOME/build --runprefix=/usr --enable-lirc --enable-audio-alsa --enable-audio-oss --enable-audio-jack --enable-dvb --enable-ivtv --enable-firewire --enable-joystick-menu --enable-opengl-vsync --enable-libfaad --with-bindings=perl --enable-opengl-video --enable-ffmpeg-pthreads --perl-config-opts="INSTALLDIRS=vendor" --enable-xvmc --enable-xvmc-vld --enable-xvmc-pro --enable-glx-procaddrarb --enable-vdpau
