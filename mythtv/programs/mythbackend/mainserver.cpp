@@ -4195,8 +4195,8 @@ void MainServer::HandleFileTransferQuery(QStringList &slist,
                                .arg(recnum);
         }
 
-        SendResponse(pbssock, retlist);
         sockListLock.unlock();
+        SendResponse(pbssock, retlist);
         return;
     }
 
@@ -5227,8 +5227,8 @@ void MainServer::reconnectTimeout(void)
         !masterServerSock->readStringList(strlist) ||
         strlist.empty() || strlist[0] == "ERROR")
     {
-        masterServerSock->DownRef();
         masterServerSock->Unlock();
+        masterServerSock->DownRef();
         masterServerSock = NULL;
         if (strlist.empty())
         {

@@ -1992,7 +1992,11 @@ void Scheduler::RunScheduler(void)
                 if (expirer)
                 {
                     // activate auto expirer
+                    lockit.unlock();
+                    VERBOSE(VB_SCHEDULE, LOC +
+                        QString("call AutoExpire::Update(%1,%2,true) brief unlock").arg(nextRecording->cardid).arg(fsID));
                     expirer->Update(nextRecording->cardid, fsID, true);
+                    lockit.relock();
                 }
             }
             else
