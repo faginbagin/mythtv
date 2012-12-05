@@ -923,6 +923,9 @@ int MPV_frame_start(MpegEncContext *s, AVCodecContext *avctx)
         memcpy(pic->atsc_cc_buf, s->tmp_atsc_cc_buf, s->tmp_atsc_cc_len);
         pic->atsc_cc_len = s->tmp_atsc_cc_len;
         s->tmp_atsc_cc_len = 0;
+        memcpy(pic->scte_cc_buf, s->tmp_scte_cc_buf, s->tmp_scte_cc_len);
+        pic->scte_cc_len = s->tmp_scte_cc_len;
+        s->tmp_scte_cc_len = 0;
 
         /* Put DVB captions cached from parse_user_data into the correct frame */
         memcpy(pic->dvb_cc_buf, s->tmp_dvb_cc_buf, s->tmp_dvb_cc_len);

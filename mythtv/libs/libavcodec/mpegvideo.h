@@ -651,6 +651,8 @@ typedef struct MpegEncContext {
     /// frame for these packets has been created in MPV_frame_start().
     uint8_t tmp_atsc_cc_buf[ATSC_CC_BUF_SIZE];
     int     tmp_atsc_cc_len;
+    uint8_t tmp_scte_cc_buf[ATSC_CC_BUF_SIZE];
+    int     tmp_scte_cc_len;
 
 #define DVB_CC_BUF_SIZE 128
     /// Used to hold cached user_data about EIA-608 captions in DVB before

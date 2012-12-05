@@ -179,7 +179,7 @@ class AvFormatDecoder : public DecoderBase
     friend int64_t seek_avf(URLContext *h, int64_t offset, int whence);
     friend int close_avf(URLContext *h);
 
-    void DecodeDTVCC(const uint8_t *buf);
+    void DecodeDTVCC(const uint8_t *buf, uint buf_size, bool scte);
     void InitByteContext(void);
     void InitVideoCodec(AVStream *stream, AVCodecContext *enc,
                         bool selectedStream = false);
@@ -256,6 +256,9 @@ class AvFormatDecoder : public DecoderBase
     int maxkeyframedist;
 
     // Caption/Subtitle/Teletext decoders
+    bool             choose_scte_cc;
+    uint             invert_scte_field;
+    uint             last_scte_field;
     CC608Decoder     *ccd608;
     CC708Decoder     *ccd708;
     TeletextDecoder  *ttd;

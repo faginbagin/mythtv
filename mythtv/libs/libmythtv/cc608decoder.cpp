@@ -168,7 +168,12 @@ void CC608Decoder::FormatCCField(int tc, int field, int data)
     }
 
     if (FalseDup(tc, field, data))
-        goto skip;
+    {
+        if (ignore_time_code)
+            return;
+        else
+           goto skip;
+    }
 
     XDSDecode(field, b1, b2);
 
@@ -527,10 +532,15 @@ int CC608Decoder::FalseDup(int tc, int field, int data)
 
     if (ignore_time_code)
     {
-        // just suppress duplicate control codes
+        // most digital streams with encoded VBI
+        // have duplicate control codes;
+        // suppress every other repeated control code
         if ((data == lastcode[field]) &&
             ((b1 & 0x70) == 0x10))
+        {
+            lastcode[field] = -1;
             return 1;
+        }
         else
             return 0;
     }

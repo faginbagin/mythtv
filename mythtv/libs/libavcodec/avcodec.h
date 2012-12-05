@@ -929,6 +929,8 @@ typedef struct AVPanScan{
      */\
     uint8_t atsc_cc_buf[1024];\
     int atsc_cc_len;\
+    uint8_t scte_cc_buf[1024];\
+    int scte_cc_len;\
 \
     /** DVB CC data\
      * - encoding: unused\

@@ -486,6 +486,12 @@ AvFormatDecoder::AvFormatDecoder(NuppelVideoPlayer *parent,
       no_hardware_decoders(no_hardware_decode),
       maxkeyframedist(-1),
       // Closed Caption & Teletext decoders
+      choose_scte_cc(true),
+      invert_scte_field(0),
+      last_scte_field(0),
+      // heb ccd608(new CC608Decoder(parent->GetCC608Reader())),
+      // heb ccd708(new CC708Decoder(parent->GetCC708Reader())),
+      // heb ttd(new TeletextDecoder(parent->GetTeletextReader())),
       ccd608(new CC608Decoder(parent)),
       ccd708(new CC708Decoder(parent)),
       ttd(new TeletextDecoder()),
@@ -2695,8 +2701,11 @@ void decode_cc_dvd(struct AVCodecContext *s, const uint8_t *buf, int buf_size)
     nd->lastccptsu = utc;
 }
 
-void AvFormatDecoder::DecodeDTVCC(const uint8_t *buf)
+void AvFormatDecoder::DecodeDTVCC(const uint8_t *buf, uint len, bool scte)
 {
+    if (!len)
+        return;
+
     // closed caption data
     //cc_data() {
     // reserved                1 0.0   1
@@ -2709,9 +2718,12 @@ void AvFormatDecoder::DecodeDTVCC(const uint8_t *buf)
     //bool additional_data = buf[0] & 0x20;
     // cc_count                5 0.3   uimsbf
     uint cc_count = buf[0] & 0x1f;
-    // reserved                8 1.0   0xff
-    // em_data                 8 2.0
+    // em_data                 8 1.0
 
+    if (len < 2+(3*cc_count))
+        return;
+
+    bool had_608 = false, had_708 = false;
     for (uint cur = 0; cur < cc_count; cur++)
     {
         uint cc_code  = buf[2+(cur*3)];
@@ -2723,15 +2735,49 @@ void AvFormatDecoder::DecodeDTVCC(const uint8_t *buf)
         uint data2    = buf[4+(cur*3)];
         uint data     = (data2 << 8) | data1;
         uint cc_type  = cc_code & 0x03;
+        uint field;
 
-        if (cc_type <= 0x1) // EIA-608 field-1/2
+        if (scte || cc_type <= 0x1) // EIA-608 field-1/2
         {
+            if (cc_type == 0x2)
+            {
+                // SCTE repeated field
+                field = !last_scte_field;
+                invert_scte_field = !invert_scte_field;
+            }
+            else
+            {
+                field = cc_type ^ invert_scte_field;
+            }
+
             if (cc608_good_parity(cc608_parity_table, data))
-                ccd608->FormatCCField(lastccptsu / 1000, cc_type, data);
+            {
+                // in film mode, we may start at the wrong field;
+                // correct if XDS start/cont/end code is detected (must be field 2)
+                if (scte && field == 0 &&
+                    (data1 & 0x7f) <= 0x0f && (data1 & 0x7f) != 0x00)
+                {
+                    if (cc_type == 1)
+                        invert_scte_field = 0;
+                    field = 1;
+
+                    // flush decoder
+                    ccd608->FormatCC(0, -1, -1);
+                }
+
+                had_608 = true;
+                ccd608->FormatCCField(lastccptsu / 1000, field, data);
+
+                last_scte_field = field;
+            }
         }
-        else // EIA-708 CC data
+        else
+        {
+            had_708 = true;
             ccd708->decode_cc_data(cc_type, data1, data2);
+        }
     }
+    //UpdateCaptionTracksFromStreams(had_608, had_708);
 }
 
 void AvFormatDecoder::HandleGopStart(
@@ -4316,11 +4362,35 @@ bool AvFormatDecoder::GetFrame(DecodeType decodetype)
                     }
 
                     // Decode ATSC captions
-                    for (uint i = 0; i < (uint)mpa_pic.atsc_cc_len;
-                         i += ((mpa_pic.atsc_cc_buf[i] & 0x1f) * 3) + 2)
-                    {
-                        DecodeDTVCC(mpa_pic.atsc_cc_buf + i);
-                    }
+                    //for (uint i = 0; i < (uint)mpa_pic.atsc_cc_len;
+                         //i += ((mpa_pic.atsc_cc_buf[i] & 0x1f) * 3) + 2)
+                    //{
+                        //DecodeDTVCC(mpa_pic.atsc_cc_buf + i);
+                    //}
+    uint cc_len;
+    uint8_t *cc_buf;
+    bool scte;
+
+    // if both ATSC and SCTE caption data are available, choose ATSC(?)
+    if (choose_scte_cc || mpa_pic.atsc_cc_len)
+    {
+        choose_scte_cc = false;
+        cc_len = (uint)mpa_pic.atsc_cc_len;
+        cc_buf = mpa_pic.atsc_cc_buf;
+        scte = false;
+    }
+    else
+    {
+        cc_len = (uint)mpa_pic.scte_cc_len;
+        cc_buf = mpa_pic.scte_cc_buf;
+        scte = true;
+    }
+
+    for (uint i = 0; i < cc_len; i += ((cc_buf[i] & 0x1f) * 3) + 2)
+    {
+        DecodeDTVCC(cc_buf + i, cc_len - i, scte);
+    }
+
 
                     // Decode DVB captions from MPEG user data
                     if (mpa_pic.dvb_cc_len > 0)
