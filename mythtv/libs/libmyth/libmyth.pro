@@ -79,6 +79,7 @@ LIBS += -L../libmythfreesurround -lmythfreesurround-$${LIBVERSION}
 LIBS += -L../libavcodec          -lmythavcodec-$${LIBVERSION}
 LIBS += -L../libavutil           -lmythavutil-$${LIBVERSION}
 unix:LIBS += -ldl
+using_libudev:LIBS += $${CONFIG_LIBUDEV_LIBS}
 
 TARGETDEPS += ../libmythsamplerate/libmythsamplerate-$${MYTH_LIB_EXT}
 TARGETDEPS += ../libmythsoundtouch/libmythsoundtouch-$${MYTH_LIB_EXT}
