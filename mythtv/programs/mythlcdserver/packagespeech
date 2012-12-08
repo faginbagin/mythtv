@@ -1,0 +1,11 @@
+if [ x"$1" = x ]
+then
+echo "Usage: $0 <version>"
+exit 1
+fi
+dir=$HOME/mythspeech-$1
+mkdir -p $dir
+cp -p installspeech mythspeech mythlcdserver xprofile $dir
+git diff --cached 84431ca786a4543623fb3a293b0ec18d49194338 > $dir/mythspeech-$1.patch
+cd $HOME
+tar czf mythspeech-$1.tgz mythspeech-$1
