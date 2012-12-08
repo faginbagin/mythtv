@@ -43,7 +43,7 @@ VERSION="0.1.20100526-1"
 # keep all temporary files for debugging purposes
 # set this to True before a first run through when testing
 # out new themes (see below)
-debug_keeptempfiles = False
+debug_keeptempfiles = True
 
 ##You can use this debug flag when testing out new themes
 ##pick some small recordings, run them through as normal
@@ -147,6 +147,8 @@ progressfile = open("/dev/null", 'w')
 dvddrivepath = "/dev/dvd"
 
 #default option settings
+rundvdauthor = True
+lang = ""
 docreateiso = False
 doburn = True
 erasedvdrw = False
@@ -257,7 +259,7 @@ def fatalError(msg):
     write("")
     saveSetting("MythArchiveLastRunResult", "Failed: " + quoteString(msg));
     saveSetting("MythArchiveLastRunEnd", time.strftime("%Y-%m-%d %H:%M:%S "))
-    sys.exit(0)
+    sys.exit(1)
 
 # ###########################################################
 # Display a warning message
@@ -434,6 +436,10 @@ def deleteAllFilesInFolder(folder):
     for root, dirs, deletefiles in os.walk(folder, topdown=False):
         for name in deletefiles:
                 os.remove(os.path.join(root, name))
+        for name in dirs:
+            dir = os.path.join(root, name)
+            if dir != folder:
+                os.rmdir(dir)
 
 #############################################################
 # Check to see if the user has cancelled the DVD creation process
@@ -454,6 +460,7 @@ def checkCancelFlag():
 def runCommand(command):
     checkCancelFlag()
 
+    write(command)
     result = os.system(command)
 
     if os.WIFEXITED(result):
@@ -605,15 +612,15 @@ def getAudioParams(folder):
 # Gets the video resolution, frames per second and aspect ratio
 # of a video file from its stream info file
 
-def getVideoParams(folder):
+def getVideoParams(folder, file):
     """Returns the video resolution, fps and aspect ratio for the video file from the streamindo.xml file"""
 
     #open the XML containing information about this file
-    infoDOM = xml.dom.minidom.parse(os.path.join(folder, 'streaminfo.xml'))
+    infoDOM = xml.dom.minidom.parse(os.path.join(folder, file))
 
     #error out if its the wrong XML
     if infoDOM.documentElement.tagName != "file":
-        fatalError("Stream info file doesn't look right (%s)" % os.path.join(getItemTempPath(index), 'streaminfo.xml'))
+        fatalError("Stream info file doesn't look right (%s)" % os.path.join(getItemTempPath(index), file))
     video = infoDOM.getElementsByTagName("file")[0].getElementsByTagName("streams")[0].getElementsByTagName("video")[0]
 
     if video.attributes["aspectratio"].value != 'N/A':
@@ -634,7 +641,7 @@ def getVideoParams(folder):
         write("WARNING: frames rates do not match")
         write("The frame rate for %s should be %s but the stream info file "
               "report a fps of %s" % (videomode, fr, fps))
-        fps = fr
+        #fps = fr
 
     return (videores, fps, aspect_ratio)
 
@@ -795,6 +802,99 @@ def createVideoChaptersFixedLength(itemnum, segment, lengthofvideo):
 
     return chapters
 
+def createVideoChaptersAtMarks(itemnum, segment, lengthofvideo):
+    """Returns chapters based on commercial marks or cut points
+    if there are no commercial marks or cut points,
+    then return fixed length chapters """
+
+    #Get the XML containing information about this item
+    folder = getItemTempPath(itemnum)
+    infoDOM = xml.dom.minidom.parse(os.path.join(folder, 'info.xml'))
+    #Error out if its the wrong XML
+    if infoDOM.documentElement.tagName != "fileinfo":
+        fatalError("The info.xml file (%s) doesn't look right" % os.path.join(folder,"info.xml"))
+
+    type = getText(infoDOM.getElementsByTagName("type")[0])
+    last = 0.0
+
+    # If this is a myth recording, fetch commercial marks and cut points
+    if type == "recording":
+        chanid = getText(infoDOM.getElementsByTagName("chanid")[0])
+        starttime = getText(infoDOM.getElementsByTagName("starttime")[0])
+        #starttime = time.strptime(starttime, "%Y-%m-%dT%H:%M:%S")
+        #starttime = time.strftime("%Y-%m-%d %H:%M:%S", starttime)
+
+        # connect
+        db = getDatabaseConnection()
+        # find the commercial marks (and bookmark) if available
+        sqlstatement  = """SELECT mark, type FROM recordedmarkup 
+                    WHERE chanid = '%s' AND starttime = '%s' 
+                    AND type IN (0,1,2,4,5) ORDER BY mark""" % (chanid, starttime)
+        #write("Fetch commercial marks sqlstatement=" + sqlstatement)
+
+        cursor = db.cursor()
+        # execute SQL statement
+        cursor.execute(sqlstatement)
+
+        if cursor.rowcount > 0:
+            usecutlist = (getText(infoDOM.getElementsByTagName("usecutlist")[0]) == "1" and
+                         getText(infoDOM.getElementsByTagName("hascutlist")[0]) == "yes")
+            # We need fps to translate frame marks to seconds
+            videores, fps, aspectratio = getVideoParams(folder, 'streaminfo_orig.xml')
+            fps = float(fps);
+            cutframes = 0
+            incut = False
+            startcut = 0
+
+            chapters = ""
+
+            result = cursor.fetchall()
+            for record in result:
+                write("mark=%d type=%d cutframes=%d startcut=%d incut=%d last=%.3f" % ( record[0], record[1], cutframes, startcut, incut, last))
+
+                if (usecutlist and record[1] == 1):
+                    # Found the start of a cut
+                    startcut = record[0]
+                    incut = True
+                elif (usecutlist and record[1] == 0 and incut):
+                    cutframes += record[0] - startcut
+                    incut = False
+                if ((usecutlist and record[1] == 1) or
+                    (not usecutlist and (record[1] == 2 or record[1] == 4 or record[1] == 5))):
+
+                    if (usecutlist):
+                        seconds = (float(record[0] - cutframes) / fps)
+                    else:
+                        # Subtract a little so the viewer can be reasonably confident
+                        # that the chapter does mark a transition to/from commercials
+                        seconds = (float(record[0]) / fps) - 2.0
+
+                        # Of course, that probably means the first one is now too small
+                        if (seconds < 0.0):
+                            seconds = 0.0
+
+                    # In case this is largely commercial free,
+                    # create chapter marks at roughly 5 minute intervals
+                    while ((seconds - last) > 600.0):
+                        last += 300.0
+                        chapters += ("%.3f" % last) + ","
+
+                    # Don't add chapters that are less than one minute
+                    if (seconds - last) > 60.0:
+                        # Note, you don't have to format the chapters in h:mm:ss
+                        # so why bother?
+                        chapters += ("%.3f" % seconds) + ","
+                        last = seconds
+
+        del cursor
+        db.close()
+        del db
+        if (last > segment):
+            return chapters
+
+    # If there are no useful commercial marks, fall back to fixed length chapters
+    return createVideoChaptersFixedLength(itemnum, segment, lengthofvideo)
+
 #############################################################
 # Reads a load of settings from DB
 
@@ -903,6 +1003,8 @@ def clearArchiveItems():
 # Load the options from the options node passed in the job file
 
 def getOptions(options):
+    global rundvdauthor
+    global lang
     global doburn
     global docreateiso
     global erasedvdrw
@@ -913,14 +1015,25 @@ def getOptions(options):
         fatalError("Trying to read the options from the job file but none found?")
     options = options[0]
 
+    if options.hasAttribute("rundvdauthor"):
+        rundvdauthor = options.attributes["rundvdauthor"].value != '0'
+    if options.hasAttribute("lang"):
+        lang = options.attributes["lang"].value
+    if lang == "":
+        lang = os.environ.get("LANG", "")
+        if lang == "":
+            lang = "en"
+        else:
+            lang = lang[0:2]
+
     doburn = options.attributes["doburn"].value != '0'
     docreateiso = options.attributes["createiso"].value != '0'
     erasedvdrw = options.attributes["erasedvdrw"].value != '0'
     mediatype = int(options.attributes["mediatype"].value)
     savefilename = options.attributes["savefilename"].value
 
-    write("Options - mediatype = %d, doburn = %d, createiso = %d, erasedvdrw = %d" \
-           % (mediatype, doburn, docreateiso, erasedvdrw))
+    write("Options - mediatype = %d, doburn = %d, createiso = %d, erasedvdrw = %d, rundvdauthor = %d lang=%s" \
+           % (mediatype, doburn, docreateiso, erasedvdrw, rundvdauthor, lang))
     write("          savefilename = '%s'" % savefilename)
 
 #############################################################
@@ -1195,7 +1308,10 @@ def paintText(draw, image, text, node, color = None,
             else:
                 yoffset = vindent
 
-            image.paste(textImage, (x + xoffset,y + yoffset + j * h), textImage)
+            # This produces virtually illegible text
+            #image.paste(textImage, (x + xoffset,y + yoffset + j * h), textImage)
+            # This is better, but not great
+            draw.text((x + xoffset,y + yoffset + j * h), i, font=font.getFont(), fill=color)
         else:
             write( "Truncated text = " + i.encode("ascii", "replace"), False)
         #Move to next line
@@ -1448,6 +1564,10 @@ def getFileInformation(file, folder):
                     node.appendChild(infoDOM.createTextNode("no"))
                     top_element.appendChild(node)
 
+                node = infoDOM.createElement("usecutlist")
+                node.appendChild(infoDOM.createTextNode(file.attributes["usecutlist"].value))
+                top_element.appendChild(node)
+
                 # find the cut list end marks if available to use as chapter marks
                 if file.attributes["usecutlist"].value == "0" and addCutlistChapters == True:
                     cursor = db.cursor()
@@ -1459,7 +1579,7 @@ def getFileInformation(file, folder):
                     # get the resultset as a tuple
                     result = cursor.fetchall()
                     if cursor.rowcount > 0:
-                        res, fps, ar = getVideoParams(folder)
+                        res, fps, ar = getVideoParams(folder, 'streaminfo.xml')
                         chapterlist="00:00:00"
                         #iterate through marks, adding to chapterlist
                         for record in result:
@@ -1482,7 +1602,7 @@ def getFileInformation(file, folder):
         # execute SQL statement
         cursor.execute("""SELECT progstart, stars, cutlist, category,
                                  description, subtitle, title, starttime,
-                                 chanid
+                                 chanid, endtime
                           FROM recorded
                           WHERE basename=%s""", basename)
         # get the resultset as a tuple
@@ -1512,13 +1632,18 @@ def getFileInformation(file, folder):
             top_element.appendChild(node)
 
             #date time is returned as 2005-12-19 00:15:00            
-            recdate = time.strptime(str(record[0])[0:19], "%Y-%m-%d %H:%M:%S")
+            recdate = time.strptime(str(record[7])[0:19], "%Y-%m-%d %H:%M:%S")
+            endtime = time.strptime(str(record[9])[0:19], "%Y-%m-%d %H:%M:%S")
             node = infoDOM.createElement("recordingdate")
             node.appendChild(infoDOM.createTextNode( time.strftime(dateformat,recdate)  ))
             top_element.appendChild(node)
 
             node = infoDOM.createElement("recordingtime")
-            node.appendChild(infoDOM.createTextNode( time.strftime(timeformat,recdate)))
+            #node.appendChild(infoDOM.createTextNode( time.strftime(timeformat,recdate)))
+            node.appendChild(infoDOM.createTextNode("%s - %s" %
+                (time.strftime(timeformat,recdate),
+                 time.strftime(timeformat,endtime))))
+
             top_element.appendChild(node)   
 
             node = infoDOM.createElement("subtitle")
@@ -1569,6 +1694,10 @@ def getFileInformation(file, folder):
                 node.appendChild(infoDOM.createTextNode("no"))
                 top_element.appendChild(node)
 
+            node = infoDOM.createElement("usecutlist")
+            node.appendChild(infoDOM.createTextNode(file.attributes["usecutlist"].value))
+            top_element.appendChild(node)
+
             if file.attributes["usecutlist"].value == "0" and addCutlistChapters == True:
                 # find the cut list end marks if available
                 cursor = db.cursor()
@@ -1581,7 +1710,7 @@ def getFileInformation(file, folder):
                 # get the resultset as a tuple
                 result = cursor.fetchall()
                 if cursor.rowcount > 0:
-                    res, fps, ar = getVideoParams(folder)
+                    res, fps, ar = getVideoParams(folder, 'streaminfo.xml')
                     chapterlist="00:00:00"
                     #iterate through marks, adding to chapterlist
                     for record in result:
@@ -1727,7 +1856,7 @@ def getFileInformation(file, folder):
         thumbs = thumbs[0]
         thumbs = file.getElementsByTagName("thumb")
         thumblist = ""
-        res, fps, ar = getVideoParams(folder)
+        res, fps, ar = getVideoParams(folder, 'streaminfo.xml')
 
         for thumb in thumbs:
             caption = thumb.attributes["caption"].value
@@ -1898,7 +2027,7 @@ def multiplexMPEGStream(video, audio1, audio2, destination, syncOffset):
         return result
     else:
         if result != 0:
-            fatalError("mplex failed with result %d" % result)
+            nonfatalError("mplex failed with result %d" % result)
 
     # run spumux to add subtitles if they exist
     if os.path.exists(os.path.dirname(destination) + "/stream.d/spumux.xml"):
@@ -2514,7 +2643,7 @@ def encodeNuvToMPEG2(chanid, starttime, mediafile, destvideofile, folder, profil
 
 
     samplerate, channels = getAudioParams(folder)
-    videores, fps, aspectratio = getVideoParams(folder)
+    videores, fps, aspectratio = getVideoParams(folder, 'streaminfo.xml')
 
     command =  path_ffmpeg[0] + " -y "
 
@@ -2735,6 +2864,7 @@ def calculateFileSizes(files):
     totalaudiosize=0
     totalmenusize=0
 
+    # Total up 2k blocks
     for node in files:
         filecount+=1
         #Generate a temp folder name for this file
@@ -2742,33 +2872,37 @@ def calculateFileSizes(files):
         #Process this file
         file=os.path.join(folder,"stream.mv2")
         #Get size of video in MBytes
-        totalvideosize+=os.path.getsize(file) / 1024 / 1024
+        totalvideosize+=(os.path.getsize(file) + 2047) / 2048
 
         #Get size of audio track 1
         if doesFileExist(os.path.join(folder,"stream0.ac3")):
-            totalaudiosize+=os.path.getsize(os.path.join(folder,"stream0.ac3")) / 1024 / 1024
+            totalaudiosize+=(os.path.getsize(os.path.join(folder,"stream0.ac3")) + 2047) / 2048
         if doesFileExist(os.path.join(folder,"stream0.mp2")):
-            totalaudiosize+=os.path.getsize(os.path.join(folder,"stream0.mp2")) / 1024 / 1024
+            totalaudiosize+=(os.path.getsize(os.path.join(folder,"stream0.mp2")) + 2047) / 2048
 
         #Get size of audio track 2 if available 
         if doesFileExist(os.path.join(folder,"stream1.ac3")):
-            totalaudiosize+=os.path.getsize(os.path.join(folder,"stream1.ac3")) / 1024 / 1024
+            totalaudiosize+=(os.path.getsize(os.path.join(folder,"stream1.ac3")) + 2047) / 2048
         if doesFileExist(os.path.join(folder,"stream1.mp2")):
-            totalaudiosize+=os.path.getsize(os.path.join(folder,"stream1.mp2")) / 1024 / 1024
+            totalaudiosize+=(os.path.getsize(os.path.join(folder,"stream1.mp2")) + 2047) / 2048
 
         # add chapter menu if available
         if doesFileExist(os.path.join(getTempPath(),"chaptermenu-%s.mpg" % filecount)):
-            totalmenusize+=os.path.getsize(os.path.join(getTempPath(),"chaptermenu-%s.mpg" % filecount)) / 1024 / 1024
+            totalmenusize+=(os.path.getsize(os.path.join(getTempPath(),"chaptermenu-%s.mpg" % filecount)) + 2047) / 2048
 
         # add details page if available
         if doesFileExist(os.path.join(getTempPath(),"details-%s.mpg" % filecount)):
-            totalmenusize+=os.path.getsize(os.path.join(getTempPath(),"details-%s.mpg" % filecount)) / 1024 / 1024
+            totalmenusize+=(os.path.getsize(os.path.join(getTempPath(),"details-%s.mpg" % filecount)) + 2047) / 2048
 
     filecount=1
     while doesFileExist(os.path.join(getTempPath(),"menu-%s.mpg" % filecount)):
-        totalmenusize+=os.path.getsize(os.path.join(getTempPath(),"menu-%s.mpg" % filecount)) / 1024 / 1024
+        totalmenusize+=(os.path.getsize(os.path.join(getTempPath(),"menu-%s.mpg" % filecount)) + 2047) / 2048
         filecount+=1
 
+    # Convert 2k blocks to Mbytes
+    totalvideosize = (totalvideosize + 511) / 512
+    totalaudiosize = (totalaudiosize + 511) / 512
+    totalmenusize = (totalmenusize + 511) / 512
     return totalvideosize,totalaudiosize,totalmenusize
 
 #############################################################
@@ -2788,7 +2922,7 @@ def performMPEG2Shrink(files,dvdrsize):
     dvdrsize-=totalmenusize
 
     #Add a little bit for the multiplexing stream data
-    totalvideosize=totalvideosize*1.08
+    totalvideosize=totalvideosize*1.04
 
     if dvdrsize<0:
         fatalError("Audio and menu files are greater than the size of a recordable DVD disk.  Giving up!")
@@ -2803,7 +2937,9 @@ def performMPEG2Shrink(files,dvdrsize):
 
         #tcrequant (transcode) is an optional install so may not be available
         if path_tcrequant[0] == "":
-            fatalError("tcrequant is not available to resize the files.  Giving up!")
+            #fatalError("tcrequant is not available to resize the files.  Giving up!")
+            write("WARNING: tcrequant is not available to resize the files.")
+            return
 
         filecount=0
         for node in files:
@@ -2813,7 +2949,7 @@ def performMPEG2Shrink(files,dvdrsize):
             os.rename(os.path.join(getItemTempPath(filecount),"video.small.m2v"),os.path.join(getItemTempPath(filecount),"stream.mv2"))
 
         totalvideosize,totalaudiosize,totalmenusize=calculateFileSizes(files)
-        write( "Total DVD size AFTER TCREQUANT is %s MBytes" % (totalaudiosize + totalmenusize + (totalvideosize*1.05)))
+        write( "Total DVD size AFTER TCREQUANT is %s MBytes" % (totalaudiosize + totalmenusize + (totalvideosize*1.04)))
 
     else:
         dvdrsize-=totalvideosize
@@ -2836,7 +2972,9 @@ def createDVDAuthorXML(screensize, numberofitems):
     #Total number of video items on a single menu page (no less than 1!)
     itemsperpage = menuitems.length
     write( "Menu items per page %s" % itemsperpage)
-    autoplaymenu = 2 + ((numberofitems + itemsperpage - 1)/itemsperpage)
+    autoplaymenu = 1 + ((numberofitems + itemsperpage - 1)/itemsperpage)
+    if wantIntro:
+        autoplaymenu += 1
 
     if wantChapterMenu:
         #Get the chapter menu node (we must only have 1)
@@ -2856,6 +2994,8 @@ def createDVDAuthorXML(screensize, numberofitems):
 
     #Page number counter
     page=1
+    # Menu number counter
+    menuNum = 1
 
     #Item counter to indicate current video item
     itemnum=1
@@ -2869,6 +3009,7 @@ def createDVDAuthorXML(screensize, numberofitems):
                 <pgc entry="title">
                 </pgc>
                 </menus>
+                <fpc>g2=1;jump vmgm menu 1;</fpc>
                 </vmgm>
                 </dvdauthor>''')
 
@@ -2885,8 +3026,6 @@ def createDVDAuthorXML(screensize, numberofitems):
     g5=next title to autoplay (0 or > # titles means no more autoplay)
     """), dvdauthor_element.firstChild )
     dvdauthor_element.insertBefore(dvddom.createComment("dvdauthor XML file created by MythBurn script"), dvdauthor_element.firstChild )
-
-    menus_element.appendChild( dvddom.createComment("Title menu used to hold intro movie") )
 
     dvdauthor_element.setAttribute("dest",os.path.join(getTempPath(),"dvd"))
 
@@ -2905,6 +3044,7 @@ def createDVDAuthorXML(screensize, numberofitems):
     pgc=menus_element.childNodes[1]
 
     if wantIntro:
+        menus_element.appendChild( dvddom.createComment("Title menu used to hold intro movie") )
         #code to skip over intro if its already played
         pre = dvddom.createElement("pre")
         pgc.appendChild(pre)
@@ -2927,13 +3067,21 @@ def createDVDAuthorXML(screensize, numberofitems):
         post .appendChild(dvddom.createTextNode("{g3=1;g2=1;jump menu 2;}"))
         pgc.appendChild(post)
         del post
+        menuNum += 1
 
     while itemnum <= numberofitems:
         write( "Menu page %s" % page)
 
         #For each menu page we need to create a new PGC structure
-        menupgc = dvddom.createElement("pgc")
-        menus_element.appendChild(menupgc)
+        # Unless wantIntro is false
+        # In that case, we need to populate the pgc created by
+        # xml.dom.minidom.parseString
+        if not wantIntro and page == 1:
+            menupgc = menus_element.childNodes[1]
+        else:
+            menupgc = dvddom.createElement("pgc")
+            menus_element.appendChild(menupgc)
+
         menupgc.setAttribute("pause","inf")
 
         menupgc.appendChild( dvddom.createComment("Menu Page %s" % page) )
@@ -2976,7 +3124,7 @@ def createDVDAuthorXML(screensize, numberofitems):
             #Add this recording to this page's menu...
             button=dvddom.createElement("button")
             button.setAttribute("name","%s" % itemnum)
-            button.appendChild(dvddom.createTextNode("{g2=" + "%s" % itemsonthispage + "; g5=0; jump title %s;}" % itemnum))
+            button.appendChild(dvddom.createTextNode("{g2=" + "%s" % itemsonthispage + "; g5=" + "%s" % (itemnum+1) + "; jump title %s;}" % itemnum))
             menupgc.appendChild(button)
             del button
 
@@ -2991,26 +3139,26 @@ def createDVDAuthorXML(screensize, numberofitems):
             menus= dvddom.createElement("menus")
             titleset.appendChild(menus)
 
-            video = dvddom.createElement("video")
-            video.setAttribute("format",videomode)
+            if wantChapterMenu:
+                video = dvddom.createElement("video")
+                video.setAttribute("format",videomode)
 
-            # set the right aspect ratio
-            if chaptermenuAspectRatio == "4:3":
-                video.setAttribute("aspect", "4:3")
-            elif chaptermenuAspectRatio == "16:9":
-                video.setAttribute("aspect", "16:9")
-                video.setAttribute("widescreen", "nopanscan")
-            else: 
-                # use same aspect ratio as the video
-                if getAspectRatioOfVideo(itemnum) > aspectRatioThreshold:
+                # set the right aspect ratio
+                if chaptermenuAspectRatio == "4:3":
+                    video.setAttribute("aspect", "4:3")
+                elif chaptermenuAspectRatio == "16:9":
                     video.setAttribute("aspect", "16:9")
                     video.setAttribute("widescreen", "nopanscan")
-                else:
-                    video.setAttribute("aspect", "4:3")
+                else: 
+                    # use same aspect ratio as the video
+                    if getAspectRatioOfVideo(itemnum) > aspectRatioThreshold:
+                        video.setAttribute("aspect", "16:9")
+                        video.setAttribute("widescreen", "nopanscan")
+                    else:
+                        video.setAttribute("aspect", "4:3")
+                menus.appendChild(video)
+                del video
 
-            menus.appendChild(video)
-
-            if wantChapterMenu:
                 mymenupgc = dvddom.createElement("pgc")
                 menus.appendChild(mymenupgc)
                 mymenupgc.setAttribute("pause","inf")
@@ -3066,6 +3214,16 @@ def createDVDAuthorXML(screensize, numberofitems):
                     mymenupgc.appendChild(button)
                     del button
 
+            else:
+                # No chapter menus
+                # Add a pgc node that allows a DVD remote's sub menu button to
+                # jump to the title menu containing this title's entry
+                mymenupgc = dvddom.createElement("pgc")
+                menus.appendChild(mymenupgc)
+                pre = dvddom.createElement("pre")
+                mymenupgc.appendChild(pre)
+                pre.appendChild(dvddom.createTextNode("g2=%s; jump vmgm menu %s;" % (itemsonthispage, menuNum)))
+
             titles = dvddom.createElement("titles")
             titleset.appendChild(titles)
 
@@ -3081,15 +3239,18 @@ def createDVDAuthorXML(screensize, numberofitems):
 
             titles.appendChild(title_video)
 
+            title_audio = dvddom.createElement("audio")
+            title_audio.setAttribute("lang", lang)
             #set right audio format
             if doesFileExist(os.path.join(getItemTempPath(itemnum), "stream0.mp2")):
-                title_audio = dvddom.createElement("audio")
                 title_audio.setAttribute("format", "mp2")
             else:
-                title_audio = dvddom.createElement("audio")
                 title_audio.setAttribute("format", "ac3")
-
             titles.appendChild(title_audio)
+
+            title_subtitle = dvddom.createElement("subpicture")
+            title_subtitle.setAttribute("lang", lang)
+            titles.appendChild(title_subtitle)
 
             pgc = dvddom.createElement("pgc")
             titles.appendChild(pgc)
@@ -3109,8 +3270,11 @@ def createDVDAuthorXML(screensize, numberofitems):
                                         getLengthOfVideo(itemnum),
                                         False))
             else:
-                vob.setAttribute("chapters", 
-                    createVideoChaptersFixedLength(itemnum,
+                #vob.setAttribute("chapters", 
+                #    createVideoChaptersFixedLength(itemnum,
+                #                                   chapterLength, 
+                #                                   getLengthOfVideo(itemnum)))
+                vob.setAttribute("chapters", createVideoChaptersAtMarks(itemnum,
                                                    chapterLength, 
                                                    getLengthOfVideo(itemnum)))
 
@@ -3118,14 +3282,14 @@ def createDVDAuthorXML(screensize, numberofitems):
             pgc.appendChild(vob)
 
             post = dvddom.createElement("post")
-            post.appendChild(dvddom.createTextNode("if (g5 eq %s) call vmgm menu %s; call vmgm menu %s;" % (itemnum + 1, autoplaymenu, page + 1)))
+            #post.appendChild(dvddom.createTextNode("if (g5 eq %s) call vmgm menu %s; call vmgm menu %s;" % (itemnum + 1, autoplaymenu, page + 1)))
+            post.appendChild(dvddom.createTextNode("if (g5 eq %s) call vmgm menu %s; call vmgm menu %s;" % (itemnum + 1, autoplaymenu, menuNum)))
             pgc.appendChild(post)
 
             #Quick variable tidy up (not really required under Python)
             del titleset
             del titles
             del menus
-            del video
             del pgc
             del vob
             del post
@@ -3137,7 +3301,7 @@ def createDVDAuthorXML(screensize, numberofitems):
                     if page>1:
                         button=dvddom.createElement("button")
                         button.setAttribute("name","previous")
-                        button.appendChild(dvddom.createTextNode("{g2=1;jump menu %s;}" % page ))
+                        button.appendChild(dvddom.createTextNode("{g2=1;jump menu %s;}" % (menuNum - 1) ))
                         endbuttons.append(button)
 
 
@@ -3145,7 +3309,7 @@ def createDVDAuthorXML(screensize, numberofitems):
                     if itemnum < numberofitems:
                         button=dvddom.createElement("button")
                         button.setAttribute("name","next")
-                        button.appendChild(dvddom.createTextNode("{g2=1;jump menu %s;}" % (page + 2)))
+                        button.appendChild(dvddom.createTextNode("{g2=1;jump menu %s;}" % (menuNum + 1)))
                         endbuttons.append(button)
 
                 elif node.nodeName=="playall":
@@ -3159,6 +3323,7 @@ def createDVDAuthorXML(screensize, numberofitems):
 
         #Move on to the next page
         page+=1
+        menuNum += 1
 
         for button in endbuttons:
             menupgc.appendChild(button)
@@ -3169,11 +3334,11 @@ def createDVDAuthorXML(screensize, numberofitems):
     menupgc.setAttribute("pause","inf")
     menupgc.appendChild( dvddom.createComment("Autoplay hack") )
 
-    dvdcode = ""
+    dvdcode = "\n"
     while (itemnum > 1):
         itemnum-=1
-        dvdcode += "if (g5 eq %s) {g5 = %s; jump title %s;} " % (itemnum, itemnum + 1, itemnum)
-    dvdcode += "g5 = 0; jump menu 1;"
+        dvdcode += "     if (g5 eq %s) {g5 = %s; jump title %s;}\n" % (itemnum, itemnum + 1, itemnum)
+    dvdcode += "     g5 = 0; jump menu 1;"
 
     pre = dvddom.createElement("pre")
     pre.appendChild(dvddom.createTextNode(dvdcode))
@@ -3194,7 +3359,10 @@ def createDVDAuthorXML(screensize, numberofitems):
 
     #write(dvddom.toprettyxml())
     #Save xml to file
-    WriteXMLToFile (dvddom,os.path.join(getTempPath(),"dvdauthor.xml"))
+    #WriteXMLToFile (dvddom,os.path.join(getTempPath(),"dvdauthor.xml"))
+    f=open(os.path.join(getTempPath(),"dvdauthor.xml"), 'w')
+    dvddom.writexml(f, "", " ", "\n", "UTF-8")
+    f.close()
 
     #Destroy the DOM and free memory
     dvddom.unlink()   
@@ -3359,7 +3527,10 @@ def createDVDAuthorXMLNoMenus(screensize, numberofitems):
 
         vob = dvddom.createElement("vob")
         vob.setAttribute("file", os.path.join(getItemTempPath(itemNum), "final.mpg"))
-        vob.setAttribute("chapters", createVideoChaptersFixedLength(itemNum,
+        #vob.setAttribute("chapters", createVideoChaptersFixedLength(itemNum,
+        #                                                            chapterLength,
+        #                                                            getLengthOfVideo(itemNum)))
+        vob.setAttribute("chapters", createVideoChaptersAtMarks(itemNum,
                                                                     chapterLength,
                                                                     getLengthOfVideo(itemNum)))
         pgc.appendChild(vob)
@@ -5191,7 +5362,10 @@ def processJob(job):
                         calcSyncOffset(filecount))
 
             #Now all the files are completed and ready to be burnt
-            runDVDAuthor()
+            if rundvdauthor == True:
+                runDVDAuthor()
+            else:
+                return
 
             #Delete dvdauthor work files
             if debug_keeptempfiles==False:
@@ -5285,6 +5459,8 @@ def main():
     # figure out where this script is located
     scriptpath = os.path.dirname(sys.argv[0])
     scriptpath = os.path.abspath(scriptpath)
+    # XXX hardcode scriptpath for development purposes
+    # scriptpath = "/usr/share/mythtv/mytharchive/scripts"
     write("script path:" + scriptpath)
 
     # figure out where the myth share directory is located
@@ -5451,6 +5627,11 @@ def main():
             os.system("chmod -R a+rw-x+X %s" % defaultsettings["MythArchiveTempDir"])
     except SystemExit:
         write("Terminated")
+        # This exception is called when there's a premature exit
+        # But we don't exit with a non-zero exit code
+        # So we indicate a problem by removing dvdauthor.xml
+        if os.path.exists(os.path.join(getTempPath(),'dvdauthor.xml')):
+            os.remove(os.path.join(getTempPath(),'dvdauthor.xml'))
     except:
         write('-'*60)
         traceback.print_exc(file=sys.stdout)
