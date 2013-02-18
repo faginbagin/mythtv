@@ -328,8 +328,15 @@ void LoggerThread::run(void)
         {
             qRegisterMetaType<QList<QByteArray> >("QList<QByteArray>");
 
+            // Let m_zmqContext own the socket to prevent core dump in mythlogserver
+            // If this object takes ownership by calling:
+            // m_zmqSocket =
+            //     m_zmqContext->createSocket(nzmqt::ZMQSocket::TYP_DEALER, this);
+            // Qt will delete the socket when our destructor is called.
+            // Later, Qt's event loop will post a destroyed event to m_zmqContext
+            // which will call m_zmqSocket->disconnect() causing a core dump.
             m_zmqSocket =
-                m_zmqContext->createSocket(nzmqt::ZMQSocket::TYP_DEALER, this);
+                m_zmqContext->createSocket(nzmqt::ZMQSocket::TYP_DEALER);
             connect(m_zmqSocket,
                     SIGNAL(messageReceived(const QList<QByteArray>&)),
                     SLOT(messageReceived(const QList<QByteArray>&)),
