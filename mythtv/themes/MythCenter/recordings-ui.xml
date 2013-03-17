@@ -4,51 +4,18 @@
 
     <window name="watchrecordings">
 
-        <fontdef name="menufont" face="Trebuchet MS">
-            <color>#FFFFFF</color>
-            <size>16</size>
-            <weight>bold</weight>
-            <shadowcolor>#000000</shadowcolor>
-            <shadowoffset>2,2</shadowoffset>
-            <shadowalpha>50</shadowalpha>
-        </fontdef>
-
-        <fontdef name="clock" from="menufont">
-            <size>20</size>
-        </fontdef>
-
-        <clock name="clock">
-            <area>40,538,150,40</area>
-            <font>clock</font>
-            <template>%TIME%</template>
-            <align>center</align>
-            <alpha>85</alpha>
-        </clock>
-
-        <shape name="iconbackground">
-            <area>235,532,326,54</area>
-            <type>roundbox</type>
-            <fill color="#000000" alpha="55" />
-            <line color="#000000" alpha="100" width="2" />
-        </shape>
-
-        <shape name="previewbackground">
-            <area>634,520,136,78</area>
-            <type>box</type>
-            <fill color="#000000" alpha="115" />
-            <line color="#EEEEEE" alpha="200" width="3" />
-        </shape>
-
         <textarea name="pagetitle" from="basetextarea">
-            <area>20,5,570,40</area>
+            <area>20,4,570,40</area>
             <font>baselarge</font>
             <value>Watch Recordings</value>
         </textarea>
 
-        <imagetype name="coverart">
-            <area>633,337,113,167</area>
-            <preserveaspect>true</preserveaspect>
-        </imagetype>
+        <clock name="clock">
+            <area>250,10,500,30</area>
+            <font>basesmall_normal</font>
+            <template>%DATE%, %TIME%</template>
+            <align>vcenter,right</align>
+        </clock>
 
         <imagetype name="listbackground">
             <filename>reclist_background.png</filename>
@@ -57,7 +24,7 @@
 
         <buttonlist name="recgroups">
             <arrange>stack</arrange>
-            <area>225,15,340,35</area>
+            <area>224,16,340,34</area>
             <align>hcenter</align>
             <scrollstyle>center</scrollstyle>
             <wrapstyle>items</wrapstyle>
@@ -67,10 +34,10 @@
                 <state name="selectedinactive">
                     <area>0,0,300,100%</area>
                     <textarea name="buttontext">
-                        <area>10,2,-10,-5</area>
+                        <area>10,2,-10,-4</area>
                         <align>center</align>
                         <font>basemedium</font>
-                        <alpha>230</alpha>
+                        <alpha>200</alpha>
                     </textarea>
                 </state>
                 <state name="inactive" from="selectedinactive">
@@ -93,59 +60,90 @@
             <spacing>5</spacing>
             <scrollstyle>center</scrollstyle>
             <wrapstyle>items</wrapstyle>
+            <searchposition>-1,320</searchposition>
+            <triggerevent context="Global" action="ESCAPE">LEFT</triggerevent>
             <statetype name="buttonitem">
                 <state name="active">
                     <textarea name="name">
                         <area>5,-4,180,30</area>
-                        <font>basesmallboldblue</font>
+                        <font>basesmall_normal</font>
                         <cutdown>yes</cutdown>
                         <align>left,vcenter</align>
                     </textarea>
                 </state>
-                <state name="selectedinactive" from="active">
-                    <textarea name="name">
-                        <area>5,-4,180,30</area>
-                        <font>basesmallboldblue</font>
-                        <cutdown>yes</cutdown>
-                        <align>left,vcenter</align>
-                    </textarea>
-                </state>
+                <state name="selectedinactive" from="active" />
                 <state name="selectedactive" from="active">
                     <textarea name="name">
-                        <area>5,-4,180,30</area>
-                        <font>basesmallbold</font>
-                        <cutdown>yes</cutdown>
-                        <align>left,vcenter</align>
+                        <font>basesmall_normal_selected</font>
                     </textarea>
                 </state>
             </statetype>
         </buttonlist>
 
         <buttonlist name="recordings" from="basebuttonlist2">
-            <area>225,31,550,330</area>
-            <buttonarea>0,27,550,270</buttonarea>
-            <spacing>5</spacing>
+            <area>224,24,558,326</area>
+            <buttonarea>0,28,100%,270</buttonarea>
             <wrapstyle>captive</wrapstyle>
+            <spacing>0</spacing>
+            <searchposition>-1,340</searchposition>
+            <triggerevent context="Global" action="MENU">RIGHT</triggerevent>
             <statetype name="buttonitem">
                 <state name="active">
+                <area>0,0,100%,30</area>
+                <statetype name="status">
+                    <position>2,2</position>
+                    <state name="disabled">
+                        <imagetype name="statusimage">
+                            <filename>schedule_disabled.png</filename>
+                        </imagetype>
+                    </state>
+                    <state name="error">
+                        <imagetype name="statusimage">
+                            <filename>schedule_conflict.png</filename>
+                        </imagetype>
+                    </state>
+                    <state name="warning">
+                        <imagetype name="statusimage">
+                            <filename>schedule_other.png</filename>
+                        </imagetype>
+                    </state>
+<!--                <state name="normal">
+                        <imagetype name="statusimage">
+                            <filename>schedule_record.png</filename>
+                        </imagetype>
+                    </state> -->
+                    <state name="running">
+                        <imagetype name="statusimage">
+                            <filename>schedule_recording.png</filename>
+                        </imagetype>
+                    </state>
+                    <state name="marked"></state>
+                </statetype>
                     <textarea name="titlesubtitle" from="buttontext">
-                        <area>15,1,370,24</area>
-                        <font>basesmallboldblue</font>
+                        <area>28,0,363,30</area>
+                        <align>vcenter</align>
                     </textarea>
                     <textarea name="shortstartdate" from="titlesubtitle">
-                        <area>340,1,100,24</area>
-                        <align>right</align>
-                        <font>basesmallboldblue</font>
+                        <area>348,0,100,30</area>
+                        <align>right,vcenter</align>
                     </textarea>
                     <textarea name="starttime" from="shortstartdate">
-                        <area>440,1,105,24</area>
-                        <align>right</align>
-                        <font>basesmallboldblue</font>
+                        <area>448,0,106,30</area>
+                        <align>right,vcenter</align>
                     </textarea>
+                    <statetype name="watched">
+                        <state name="yes">
+                            <imagetype name="yes">
+                                <position>4,2</position>
+                                <filename>small_watched.png</filename>
+                            </imagetype>
+                        </state>
+                        <state name="no" />
+                    </statetype>
                     <statetype name="playlist">
                         <state name="yes">
                             <imagetype name="playlistyes">
-                                <position>-1,-5</position>
+                                <position>0,2</position>
                                 <filename>playlist_yes.png</filename>
                             </imagetype>
                         </state>
@@ -154,60 +152,63 @@
                 </state>
                 <state name="selectedinactive" from="active">
                     <shape name="selectbar">
-                        <area>1,-3,552,30</area>
+                        <area>26,0,530,30</area>
                     </shape>
                 </state>
                 <state name="selectedactive" from="active">
+                    <shape name="selectbar">
+                        <area>26,0,530,30</area>
+                    </shape>
                     <textarea name="titlesubtitle" from="buttontext">
-                        <area>15,1,370,24</area>
-                        <font>basesmallbold</font>
-                        <font state="normal">basesmalllightgrey</font>
+                        <area>28,0,363,30</area>
+                        <font>basesmall_normal_selected</font>
+                        <font state="disabled">basesmall_disabled_selected</font>
+                        <font state="error">basesmall_error_selected</font>
+                        <font state="warning">basesmall_warning_selected</font>
+                        <font state="normal">basesmall_normal_selected</font>
+                        <font state="running">basesmall_running_selected</font>
+                        <align>vcenter</align>
                     </textarea>
                     <textarea name="shortstartdate" from="titlesubtitle">
-                        <area>340,1,100,24</area>
-                        <align>right</align>
-                        <font>basesmallbold</font>
+                        <area>348,0,100,30</area>
+                        <align>right,vcenter</align>
                     </textarea>
                     <textarea name="starttime" from="shortstartdate">
-                        <area>440,1,105,24</area>
-                        <align>right</align>
-                        <font>basesmallbold</font>
+                        <area>448,0,106,30</area>
+                        <align>right,vcenter</align>
                     </textarea>
-                    <shape name="selectbar">
-                        <area>1,-3,552,30</area>
-                    </shape>
                 </state>
             </statetype>
             <statetype name="upscrollarrow">
-                <position>530,-10</position>
+                <position>528,0</position>
             </statetype>
             <statetype name="downscrollarrow">
-                <position>530,304</position>
+                <position>528,100%-18</position>
             </statetype>
         </buttonlist>
 
         <imagetype name="autoexpire">
             <filename>autoexpire.png</filename>
-            <position>245,544</position>
+            <position>622,506</position>
         </imagetype>
 
         <imagetype name="commflagged">
             <filename>commflagged.png</filename>
-            <position>279,544</position>
+            <position>666,506</position>
         </imagetype>
 
         <imagetype name="bookmark">
             <filename>bookmark.png</filename>
-            <position>313,544</position>
+            <position>708,506</position>
         </imagetype>
 
         <imagetype name="cutlist">
             <filename>cutlist.png</filename>
-            <position>347,544</position>
+            <position>752,506</position>
         </imagetype>
 
         <statetype name="audioprops">
-            <position>381,544</position>
+            <position>622,540</position>
             <showempty>yes</showempty>
             <state name="stereo">
                 <imagetype name="stereo">
@@ -232,7 +233,7 @@
         </statetype>
 
         <statetype name="subtitletypes">
-            <position>415,544</position>
+            <position>663,542</position>
             <showempty>yes</showempty>
             <state name="cc">
                 <imagetype name="cc">
@@ -252,7 +253,7 @@
         </statetype>
 
         <statetype name="videoprops">
-            <position>449,544</position>
+            <position>701,543</position>
             <showempty>yes</showempty>
             <state name="hd1080">
                 <imagetype name="hd1080">
@@ -276,14 +277,14 @@
             </state>
         </statetype>
 
-        <imagetype name="watched">
+<!--        <imagetype name="watched">
             <filename>watched.png</filename>
             <position>493,544</position>
-        </imagetype>
+        </imagetype> -->
 
         <imagetype name="processing">
             <filename>processing.png</filename>
-            <position>527,544</position>
+            <position>752,543</position>
         </imagetype>
 
         <textarea name="title" from="basetextarea">
@@ -298,18 +299,30 @@
         </textarea>
 
         <textarea name="timedate" from="basetextarea">
-            <area>195,380,480,30</area>
+            <area>195,380,420,30</area>
+        </textarea>
+
+        <textarea name="filesize_str" from="basetextarea">
+            <area>425,556,190,30</area>
+            <align>right</align>
         </textarea>
 
         <textarea name="description" from="basetextarea">
-            <area>25,410,590,110</area>
+            <area>25,410,590,176</area>
             <multiline>yes</multiline>
             <cutdown>yes</cutdown>
             <value>%"|SUBTITLE|" %%(|STARS|) %%DESCRIPTION%</value>
         </textarea>
 
+        <shape name="previewbackground">
+            <area>620,376,164,124</area>
+            <type>box</type>
+            <fill color="#000000" alpha="115" />
+            <line color="#EEEEEE" alpha="200" width="3" />
+        </shape>
+
         <imagetype name="preview">
-            <area>635,522,133,74</area>
+            <area>622,378,160,120</area>
             <preserveaspect>true</preserveaspect>
         </imagetype>
 
@@ -330,7 +343,7 @@
         </imagetype>
 
         <textarea name="label" from="basetextarea">
-            <area>12,5,470,90</area>
+            <area>12,4,470,104</area>
             <multiline>yes</multiline>
             <align>allcenter</align>
             <font>basesmall</font>
