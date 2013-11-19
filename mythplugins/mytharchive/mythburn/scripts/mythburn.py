@@ -54,7 +54,7 @@ VERSION="0.1.20131119-1"
 # keep all temporary files for debugging purposes
 # set this to True before a first run through when testing
 # out new themes (see below)
-debug_keeptempfiles = False
+debug_keeptempfiles = True
 
 ##You can use this debug flag when testing out new themes
 ##pick some small recordings, run them through as normal
@@ -173,6 +173,8 @@ progressfile = codecs.open("/dev/null", 'w', 'utf-8')
 dvddrivepath = "/dev/dvd"
 
 #default option settings
+rundvdauthor = True
+lang = ""
 docreateiso = False
 doburn = True
 erasedvdrw = False
@@ -914,6 +916,8 @@ def clearArchiveItems():
 # Load the options from the options node passed in the job file
 
 def getOptions(options):
+    global rundvdauthor
+    global lang
     global doburn
     global docreateiso
     global erasedvdrw
@@ -924,14 +928,25 @@ def getOptions(options):
         fatalError("Trying to read the options from the job file but none found?")
     options = options[0]
 
+    if options.hasAttribute("rundvdauthor"):
+        rundvdauthor = options.attributes["rundvdauthor"].value != '0'
+    if options.hasAttribute("lang"):
+        lang = options.attributes["lang"].value
+    if lang == "":
+        lang = os.environ.get("LANG", "")
+        if lang == "":
+            lang = "en"
+        else:
+            lang = lang[0:2]
+
     doburn = options.attributes["doburn"].value != '0'
     docreateiso = options.attributes["createiso"].value != '0'
     erasedvdrw = options.attributes["erasedvdrw"].value != '0'
     mediatype = int(options.attributes["mediatype"].value)
     savefilename = options.attributes["savefilename"].value
 
-    write("Options - mediatype = %d, doburn = %d, createiso = %d, erasedvdrw = %d" \
-           % (mediatype, doburn, docreateiso, erasedvdrw))
+    write("Options - mediatype = %d, doburn = %d, createiso = %d, erasedvdrw = %d, rundvdauthor=%d lang=%s" \
+           % (mediatype, doburn, docreateiso, erasedvdrw, rundvdauthor, lang))
     write("          savefilename = '%s'" % savefilename)
 
 #############################################################
@@ -1206,7 +1221,10 @@ def paintText(draw, image, text, node, color = None,
             else:
                 yoffset = vindent
 
-            image.paste(textImage, (x + xoffset,y + yoffset + j * h), textImage)
+            # This produces virtually illegible text
+            #image.paste(textImage, (x + xoffset,y + yoffset + j * h), textImage)
+            # This is better, but not great
+            draw.text((x + xoffset,y + yoffset + j * h), i, font=font.getFont(), fill=color)
         else:
             write( "Truncated text = " + i.encode("ascii", "replace"), False)
         #Move to next line
@@ -2911,15 +2929,19 @@ def createDVDAuthorXML(screensize, numberofitems):
 
             titles.appendChild(title_video)
 
+            title_audio = dvddom.createElement("audio")
+            title_audio.setAttribute("lang", lang)
             #set right audio format
             if doesFileExist(os.path.join(getItemTempPath(itemnum), "stream0.mp2")):
-                title_audio = dvddom.createElement("audio")
                 title_audio.setAttribute("format", "mp2")
             else:
-                title_audio = dvddom.createElement("audio")
                 title_audio.setAttribute("format", "ac3")
 
             titles.appendChild(title_audio)
+
+            title_subtitle = dvddom.createElement("subpicture")
+            title_subtitle.setAttribute("lang", lang)
+            titles.appendChild(title_subtitle)
 
             pgc = dvddom.createElement("pgc")
             titles.appendChild(pgc)
@@ -5004,7 +5026,10 @@ def processJob(job):
                         calcSyncOffset(filecount))
 
             #Now all the files are completed and ready to be burnt
-            runDVDAuthor()
+            if rundvdauthor == True:
+                runDVDAuthor()
+            else:
+                return
 
             #Delete dvdauthor work files
             if debug_keeptempfiles==False:
