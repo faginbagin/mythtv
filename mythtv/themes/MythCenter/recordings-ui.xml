@@ -68,10 +68,10 @@
                             </fill>
                         </shape>
                         <textarea name="buttontext">
-                            <area>15,5,-15,-5</area>
+                            <area>15,2,-15,-2</area>
                             <minsize>50,100%</minsize>
                             <extraleading>4</extraleading>
-                            <align>center</align>
+                            <align>allcenter</align>
                             <cutdown>yes</cutdown>
                             <font>basesmall</font>
                             <alpha>255</alpha>
