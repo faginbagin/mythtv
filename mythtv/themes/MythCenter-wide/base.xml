@@ -277,7 +277,7 @@
             <area>0,0,1200,26</area>
             <state name="active">
                 <textarea name="buttontext">
-                    <area>34,2,1156,24</area>
+                    <area>34,0,1156,26</area>
                     <font>basesmall_normal</font>
                     <font state="disabled">basesmall_disabled</font>
                     <font state="error">basesmall_error</font>
@@ -296,7 +296,7 @@
                     <cornerradius>4</cornerradius>
                 </shape>
                 <textarea name="buttontext">
-                    <area>34,2,1156,24</area>
+                    <area>34,0,1156,26</area>
                     <font>base_normal_selected</font>
                     <font state="disabled">basesmall_disabled_selected</font>
                     <font state="error">basesmall_error_selected</font>
@@ -595,7 +595,7 @@
             <filename>ui/cursor.png</filename>
         </imagetype>
         <textarea name="text">
-            <area>12,12,-12,-12</area>
+            <area>12,10,-12,-10</area>
             <font>basesmall_textedit</font>
         </textarea>
     </textedit>
