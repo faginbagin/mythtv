@@ -506,30 +506,28 @@
         </textarea>
 
         <buttonlist name="schedules" from="basebuttonlist2">
-            <area>30,57,1220,374</area>
+            <area>30,64,1220,374</area>
             <buttonarea>0,0,1200,374</buttonarea>
-            <spacing>4</spacing>
-            <searchposition>-1,450</searchposition>
             <statetype name="buttonitem">
-                <area>0,0,1200,24</area>
+                <area>0,0,1200,28</area>
                 <state name="active">
                     <textarea name="shortstarttimedate" from="buttontext">
-                        <area>10,2,250,24</area>
+                        <area>10,0,250,28</area>
                     </textarea>
                     <textarea name="channel" from="shortstarttimedate">
-                        <area>270,2,200,24</area>
+                        <area>270,0,200,28</area>
                     </textarea>
                     <textarea name="title" from="shortstarttimedate">
-                        <area>480,2,655,24</area>
+                        <area>480,0,655,28</area>
                     </textarea>
                     <textarea name="card" from="shortstarttimedate">
-                        <area>1145,2,40,24</area>
+                        <area>1145,0,40,28</area>
                         <align>right,vcenter</align>
                     </textarea>
                 </state>
                 <state name="selectedactive" from="active">
                     <textarea name="shortstarttimedate" from="buttontext">
-                        <area>10,2,250,24</area>
+                        <area>10,0,250,28</area>
                         <font>base_normal_selected</font>
                         <font state="disabled">basesmall_disabled_selected</font>
                         <font state="error">basesmall_error_selected</font>
@@ -538,13 +536,13 @@
                         <font state="running">basesmall_running_selected</font>
                     </textarea>
                     <textarea name="channel" from="shortstarttimedate">
-                        <area>270,2,200,24</area>
+                        <area>270,0,200,28</area>
                     </textarea>
                     <textarea name="title" from="shortstarttimedate">
-                        <area>480,2,655,24</area>
+                        <area>480,0,655,28</area>
                     </textarea>
                     <textarea name="card" from="shortstarttimedate">
-                        <area>1145,2,40,24</area>
+                        <area>1145,0,40,28</area>
                         <align>right,vcenter</align>
                      </textarea>
                     <shape name="selectbar">
@@ -616,7 +614,7 @@
         </shape>
 
         <buttonlist name="channels" from="basebuttonlist2">
-            <area>30,52,1220,380</area>
+            <area>30,56,1220,380</area>
             <buttonarea>0,0,1200,380</buttonarea>
             <statetype name="buttonitem">
                 <state name="active">
@@ -628,16 +626,16 @@
                         <position>30,0</position>
                     </statetype>
                     <textarea name="channelnumber" from="buttontext">
-                        <area>60,2,150,24</area>
+                        <area>60,2,150,-2</area>
                     </textarea>
                     <textarea name="callsign" from="channelnumber">
-                        <area>220,2,250,24</area>
+                        <area>220,2,250,-2</area>
                     </textarea>
                     <textarea name="channelname" from="channelnumber">
-                        <area>570,2,550,24</area>
+                        <area>570,2,550,-2</area>
                     </textarea>
                     <textarea name="priority" from="channelnumber">
-                        <area>1130,2,40,24</area>
+                        <area>1130,2,40,-2</area>
                         <align>right</align>
                     </textarea>
                 </state>
@@ -1019,30 +1017,30 @@
         </textarea>
 
         <buttonlist name="proglist" from="basebuttonlist2">
-            <area>30,60,1220,374</area>
+            <area>30,62,1220,374</area>
             <buttonarea>0,0,1200,374</buttonarea>
-            <spacing>4</spacing>
+            <spacing>0</spacing>
             <searchposition>-1,450</searchposition>
             <statetype name="buttonitem">
-                <area>0,0,1200,24</area>
+                <area>0,0,1200,28</area>
                 <state name="active">
                     <textarea name="shortstarttimedate" from="buttontext">
-                        <area>10,2,250,24</area>
+                        <area>10,0,250,28</area>
                     </textarea>
                     <textarea name="channel" from="shortstarttimedate">
-                        <area>270,2,200,24</area>
+                        <area>270,0,200,28</area>
                     </textarea>
                     <textarea name="titlesubtitle" from="shortstarttimedate">
-                        <area>480,2,655,24</area>
+                        <area>480,0,655,28</area>
                     </textarea>
                     <textarea name="card" from="shortstarttimedate">
-                        <area>1145,2,40,24</area>
+                        <area>1145,0,40,28</area>
                         <align>right,vcenter</align>
                     </textarea>
                 </state>
                 <state name="selectedactive" from="active">
                     <textarea name="shortstarttimedate" from="buttontext">
-                        <area>10,2,250,24</area>
+                        <area>10,0,250,28</area>
                         <font>base_normal_selected</font>
                         <font state="disabled">basesmall_disabled_selected</font>
                         <font state="error">basesmall_error_selected</font>
@@ -1051,13 +1049,13 @@
                         <font state="running">basesmall_running_selected</font>
                     </textarea>
                     <textarea name="channel" from="shortstarttimedate">
-                        <area>270,2,200,24</area>
+                        <area>270,0,200,28</area>
                     </textarea>
                     <textarea name="titlesubtitle" from="shortstarttimedate">
-                        <area>480,2,655,24</area>
+                        <area>480,0,655,28</area>
                     </textarea>
                     <textarea name="card" from="shortstarttimedate">
-                        <area>1145,2,40,24</area>
+                        <area>1145,0,40,28</area>
                         <align>right,vcenter</align>
                     </textarea>
                     <shape name="selectbar">
@@ -1513,35 +1511,36 @@
         <buttonlist name="programs" from="basebuttonlist2">
             <area>20,26,1280,420</area>
             <buttonarea>0,34,1240,340</buttonarea>
+            <spacing>0</spacing>
             <searchposition>-1,450</searchposition>
             <statetype name="buttonitem">
                 <state name="active">
                     <textarea name="rectypechar" from="buttontext">
-                        <area>20,2,20,24</area>
+                        <area>20,0,20,28</area>
                     </textarea>
                     <textarea name="title" from="buttontext">
-                        <area>50,2,550,24</area>
+                        <area>50,0,550,28</area>
                     </textarea>
                     <textarea name="callsign" from="buttontext">
-                        <area>600,2,140,24</area>
+                        <area>600,0,140,28</area>
                         <align>left</align>
                     </textarea>
                     <textarea name="lastrecorded" from="buttontext">
-                        <area>760,2,360,24</area>
+                        <area>760,0,360,28</area>
                         <align>vcenter,right</align>
                     </textarea>
                     <textarea name="finalpriority" from="buttontext">
-                        <area>1160,2,40,24</area>
+                        <area>1160,0,40,28</area>
                         <align>vcenter,right</align>
                     </textarea>
                     <textarea name="dummy" from="buttontext">
                         <value></value>
-                        <area>1190,2,30,24</area>
+                        <area>1190,0,30,28</area>
                     </textarea>
                 </state>
                 <state name="selectedactive" from="active">
                     <shape name="selectbar">
-                        <area>10,0,1220,26</area>
+                        <area>10,0,1220,28</area>
                     </shape>
                 </state>
                 <state name="selectedinactive" from="active" />
