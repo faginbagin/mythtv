@@ -68,10 +68,10 @@
                             </fill>
                         </shape>
                         <textarea name="buttontext">
-                            <area>15,5,-15,-5</area>
+                            <area>15,2,-15,-2</area>
                             <minsize>50,100%</minsize>
                             <extraleading>4</extraleading>
-                            <align>center</align>
+                            <align>allcenter</align>
                             <cutdown>yes</cutdown>
                             <font>basesmall</font>
                             <alpha>255</alpha>
@@ -138,14 +138,14 @@
             <area>25,54,315,350</area>
             <buttonarea>0,36,255,270</buttonarea>
             <spacing>0</spacing>
-            <wrapstyle>captive</wrapstyle>
+            <wrapstyle>selection</wrapstyle>
             <searchposition>-1,390</searchposition>
             <!-- <triggerevent context="Global" action="ESCAPE">LEFT</triggerevent> -->
             <statetype name="buttonitem">
                 <state name="active" >
                     <area>5,0,310,30</area>
                     <textarea name="buttontext">
-                        <area>3,0,100%-6,30</area>
+                        <area>3,0,100%,30</area>
                         <font>basesmall_normal</font>
                         <cutdown>yes</cutdown>
                         <align>left,vcenter</align>
@@ -157,7 +157,7 @@
                         <area>0,0,100%,30</area>
                     </shape>
                     <textarea name="buttontext">
-                        <area>3,0,100%-6,30</area>
+                        <area>3,0,100%,30</area>
                         <font>basesmall_normal</font>
                         <cutdown>yes</cutdown>
                         <align>left,vcenter</align>
@@ -168,7 +168,7 @@
                         <area>0,0,100%,30</area>
                     </shape>
                     <textarea name="buttontext">
-                        <area>3,0,100%-6,30</area>
+                        <area>3,0,100%,30</area>
                         <font>basesmall_normal_selected</font>
                         <cutdown>yes</cutdown>
                         <align>left,vcenter</align>
@@ -187,7 +187,7 @@
         <buttonlist name="recordings" from="basebuttonlist2">
             <area>370,54,880,350</area>
             <buttonarea>0,36,880,270</buttonarea>
-            <wrapstyle>captive</wrapstyle>
+            <wrapstyle>selection</wrapstyle>
             <spacing>0</spacing>
             <searchposition>-1,390</searchposition>
             <triggerevent context="Global" action="MENU">RIGHT</triggerevent>
@@ -332,26 +332,26 @@
 
         <imagetype name="autoexpire">
             <filename>autoexpire.png</filename>
-            <position>988,660</position>
+            <position>921,660</position>
         </imagetype>
 
         <imagetype name="commflagged">
             <filename>commflagged.png</filename>
-            <position>1024,660</position>
+            <position>962,660</position>
         </imagetype>
 
         <imagetype name="bookmark">
             <filename>bookmark.png</filename>
-            <position>1060,660</position>
+            <position>1006,660</position>
         </imagetype>
 
         <imagetype name="cutlist">
             <filename>cutlist.png</filename>
-            <position>1094,660</position>
+            <position>1043,660</position>
         </imagetype>
 
         <statetype name="audioprops">
-            <position>1128,660</position>
+            <position>1084,660</position>
             <showempty>yes</showempty>
             <state name="stereo">
                 <imagetype name="stereo">
@@ -376,7 +376,7 @@
         </statetype>
 
         <statetype name="subtitletypes">
-            <position>1162,660</position>
+            <position>1124,660</position>
             <showempty>yes</showempty>
             <state name="cc">
                 <imagetype name="cc">
@@ -396,7 +396,7 @@
         </statetype>
 
         <statetype name="videoprops">
-            <position>1196,660</position>
+            <position>1160,660</position>
             <showempty>yes</showempty>
             <state name="hd1080">
                 <imagetype name="hd1080">
@@ -427,7 +427,7 @@
 
         <imagetype name="processing">
             <filename>processing.png</filename>
-            <position>1230,660</position>
+            <position>1207,660</position>
         </imagetype>
 
         <textarea name="title" from="basetextarea">
@@ -538,7 +538,7 @@
         </shape>
 
         <textarea name="label" from="basetextarea">
-            <area>12,4,470,90</area>
+            <area>12,4,470,104</area>
             <multiline>yes</multiline>
             <align>allcenter</align>
             <font>basesmall</font>
@@ -564,11 +564,11 @@
         </textarea>
 
         <checkbox name="titles" from="basecheckbox">
-            <position>90,100</position>
+            <position>90,90</position>
         </checkbox>
 
         <textarea name="titlelabel" from="basetextarea">
-            <area>140,100,300,30</area>
+            <area>140,90,300,30</area>
             <value>Show Titles</value>
         </textarea>
 
@@ -723,13 +723,13 @@
         </spinbox>
 
         <textarea name="eplabel" from="basetextarea">
-            <area>258,275,90,30</area>
+            <area>258,275,185,30</area>
             <align>right,vcenter</align>
             <value>Episode:</value>
         </textarea>
 
         <spinbox name="episode" from="basespinbox">
-            <position>355,270</position>
+            <position>450,270</position>
         </spinbox>
 
         <textarea name="descriptionlabel" from="titlelabel">
