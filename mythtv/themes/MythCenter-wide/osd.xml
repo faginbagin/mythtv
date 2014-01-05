@@ -126,8 +126,15 @@
         <imagetype name="coverart">
             <area>1045,500,100,150</area>
         </imagetype>
+        <textarea name="channel" depends="!iconpath&amp;!coverart">
+            <area>1030,500,130,150</area>
+            <font>medium</font>
+            <align>allcenter</align>
+            <cutdown>no</cutdown>
+            <multiline>yes</multiline>
+        </textarea>
         <clock name="clock">
-            <area>900,630,280,70</area>
+            <area>900,660,280,40</area>
             <font>medium</font>
             <template>%TIME%</template>
             <align>bottom,hcenter</align>
@@ -234,6 +241,12 @@
         <imagetype name="iconpath">
             <area>1015,10,125,80</area>
         </imagetype>
+        <textarea name="callsign" depends="!iconpath">
+            <area>1015,10,125,80</area>
+            <font>medium</font>
+            <cutdown>no</cutdown>
+            <align>hcenter,vcenter</align>
+        </textarea>
     </window>
 
     <window name="osd_input">
