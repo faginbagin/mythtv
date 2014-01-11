@@ -270,14 +270,14 @@
     <buttonlist name="basebuttonlist2">
         <area>0,0,760,305</area>
         <layout>vertical</layout>
-        <spacing>4</spacing>
+        <spacing>0</spacing>
         <wrapstyle>selection</wrapstyle>
         <buttonarea>0,0,760,260</buttonarea>
         <statetype name="buttonitem">
-            <area>0,0,760,26</area>
+            <area>0,0,760,30</area>
             <state name="active">
                 <textarea name="buttontext">
-                    <area>2,0,730,26</area>
+                    <area>2,0,730,30</area>
                     <font>basesmall_normal</font>
                     <font state="disabled">basesmall_disabled</font>
                     <font state="error">basesmall_error</font>
@@ -289,14 +289,14 @@
             </state>
             <state name="selectedactive" from="active">
                 <shape name="selectbar">
-                    <area>0,0,760,26</area>
+                    <area>0,0,760,30</area>
                     <type>roundbox</type>
                     <line color="#00FF00" alpha="255" width="1" />
                     <fill color="#43b038" alpha="128" />
                     <cornerradius>4</cornerradius>
                 </shape>
                 <textarea name="buttontext">
-                    <area>2,0,730,26</area>
+                    <area>2,0,730,30</area>
                     <font>base_normal_selected</font>
                     <font state="disabled">basesmall_disabled_selected</font>
                     <font state="error">basesmall_error_selected</font>
@@ -308,7 +308,7 @@
             </state>
             <state name="selectedinactive" from="active" >
                 <shape name="selectbar">
-                    <area>0,0,760,26</area>
+                    <area>0,0,760,30</area>
                     <type>roundbox</type>
                     <line color="#00FF00" alpha="100" width="1" />
                     <fill color="#43b038" alpha="50" />
