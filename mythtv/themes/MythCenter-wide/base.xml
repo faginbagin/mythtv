@@ -270,14 +270,14 @@
     <buttonlist name="basebuttonlist2">
         <area>0,0,1240,380</area>
         <layout>vertical</layout>
-        <spacing>4</spacing>
+        <spacing>0</spacing>
         <wrapstyle>selection</wrapstyle>
         <buttonarea>0,0,1200,376</buttonarea>
         <statetype name="buttonitem">
-            <area>0,0,1200,26</area>
+            <area>0,0,1200,30</area>
             <state name="active">
                 <textarea name="buttontext">
-                    <area>34,0,1156,26</area>
+                    <area>34,0,1156,30</area>
                     <font>basesmall_normal</font>
                     <font state="disabled">basesmall_disabled</font>
                     <font state="error">basesmall_error</font>
@@ -296,7 +296,7 @@
                     <cornerradius>4</cornerradius>
                 </shape>
                 <textarea name="buttontext">
-                    <area>34,0,1156,26</area>
+                    <area>34,0,1156,30</area>
                     <font>base_normal_selected</font>
                     <font state="disabled">basesmall_disabled_selected</font>
                     <font state="error">basesmall_error_selected</font>
@@ -1108,7 +1108,7 @@
     </window>
 
     <window name="MythTimeInputDialog">
-        <area>-1,-1,580,165</area>
+        <area>-1,-1,588,170</area>
 
         <shape name="backimg" from="basepopupbackground">
             <area>0,0,100%,100%</area>
@@ -1123,11 +1123,11 @@
         </textarea>
 
         <buttonlist name="dates" from="baseselector">
-            <position>40,65</position>
+            <area>40,65,300,40</area>
         </buttonlist>
 
         <buttonlist name="times" from="baseselector">
-            <position>330,65</position>
+            <area>400,65,150,40</area>
         </buttonlist>
 
         <button name="ok" from="basebutton">
