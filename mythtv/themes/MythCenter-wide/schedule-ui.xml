@@ -40,12 +40,12 @@
         </shape>
 
         <textarea name="datetext" from="basetextarea">
-            <area>26,244,190,26</area>
+            <area>26,242,190,27</area>
             <align>top,hcenter</align>
         </textarea>
 
         <textarea name="channelgroup" from="basetextarea">
-            <area>26,270,190,26</area>
+            <area>26,269,190,27</area>
             <align>bottom,hcenter</align>
             <font>basesmall</font>
         </textarea>
