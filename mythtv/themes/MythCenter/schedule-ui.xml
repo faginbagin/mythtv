@@ -699,32 +699,8 @@
             <value>Add Clause</value>
         </button>
 
-        <textedit name="description">
+        <textedit name="description" from="basemultilinetextedit">
             <area>100,400,600,100</area>
-            <statetype name="background">
-                <area>0,0,100%,100%</area>
-                <state name="active">
-                    <area>0,0,100%,100%</area>
-                    <shape name="background">
-                        <area>0,0,100%,100%</area>
-                        <fill color="#FFFFFF" alpha="180" />
-                    </shape>
-                </state>
-                <state name="selected" from="active">
-                    <shape name="background">
-                        <fill alpha="255" />
-                    </shape>
-                </state>
-                <state name="inactive" from="active" />
-            </statetype>
-            <imagetype name="cursor">
-                <filename>cursor.png</filename>
-            </imagetype>
-            <textarea name="text">
-                <area>12,13,575,75</area>
-                <font>basesmall_textedit</font>
-                <multiline>yes</multiline>
-            </textarea>
         </textedit>
 
         <button name="cancel" from="basebutton">
@@ -752,9 +728,9 @@
     <window name="phrasepopup">
         <area>-1,-1,500,500</area>
 
-        <imagetype name="box">
-            <filename>mythdialogbox-background.png</filename>
-        </imagetype>
+        <shape name="backimg" from="basepopupbackground">
+            <area>0,0,100%,100%</area>
+        </shape>
 
         <textarea name="title_text" from="basetextarea">
             <area>20,20,460,40</area>
@@ -768,17 +744,17 @@
             <statetype name="buttonitem">
                 <state name="active">
                     <textarea name="buttontext">
-                        <area>5,0,450,30</area>
+                        <area>4,0,450,30</area>
                     </textarea>
                 </state>
                 <state name="selectedinactive">
                     <textarea name="buttontext">
-                        <area>5,0,450,30</area>
+                        <area>4,0,450,30</area>
                     </textarea>
                 </state>
                 <state name="selectedactive">
                     <textarea name="buttontext">
-                        <area>5,0,450,30</area>
+                        <area>4,0,450,30</area>
                     </textarea>
                 </state>
             </statetype>
@@ -794,23 +770,23 @@
         </button>
 
         <button name="delete_button" from="basebutton">
-            <position>173,440</position>
+            <position>172,440</position>
             <value>Delete</value>
         </button>
 
         <button name="record_button" from="basebutton">
-            <position>333,440</position>
+            <position>332,440</position>
             <value>Record</value>
         </button>
 
     </window>
 
     <window name="timepopup">
-        <area>-1,-1,580,165</area>
+        <area>-1,-1,580,166</area>
 
-        <imagetype name="box">
-            <filename>mythprogressdialog-background.png</filename>
-        </imagetype>
+        <shape name="backimg" from="basepopupbackground">
+            <area>0,0,100%,100%</area>
+        </shape>
 
         <textarea name="title" from="basetextarea">
             <area>0,10,580,40</area>
@@ -828,7 +804,7 @@
         </buttonlist>
 
         <button name="ok_button" from="basebutton">
-            <position>220,115</position>
+            <position>220,114</position>
             <value>OK</value>
         </button>
 
@@ -837,9 +813,9 @@
     <window name="powersearchpopup">
         <area>-1,-1,500,500</area>
 
-        <imagetype name="box">
-            <filename>mythdialogbox-background.png</filename>
-        </imagetype>
+        <shape name="backimg" from="basepopupbackground">
+            <area>0,0,100%,100%</area>
+        </shape>
 
         <textarea name="title_text" from="basetextarea">
             <area>20,20,460,40</area>
@@ -853,17 +829,17 @@
             <statetype name="buttonitem">
                 <state name="active">
                     <textarea name="buttontext">
-                        <area>5,0,450,30</area>
+                        <area>4,0,450,30</area>
                     </textarea>
                 </state>
                 <state name="selectedinactive">
                     <textarea name="buttontext">
-                        <area>5,0,450,30</area>
+                        <area>4,0,450,30</area>
                     </textarea>
                 </state>
                 <state name="selectedactive">
                     <textarea name="buttontext">
-                        <area>5,0,450,30</area>
+                        <area>4,0,450,30</area>
                     </textarea>
                 </state>
             </statetype>
@@ -874,11 +850,11 @@
         </button>
 
         <button name="delete_button" from="basebutton">
-            <position>173,440</position>
+            <position>172,440</position>
         </button>
 
         <button name="record_button" from="basebutton">
-            <position>333,440</position>
+            <position>332,440</position>
         </button>
 
     </window>
@@ -886,10 +862,9 @@
     <window name="editpowersearchpopup">
         <area>-1,-1,500,550</area>
 
-        <imagetype name="box">
-            <area>0,0,500,550</area>
-            <filename>mythdialogbox-background.png</filename>
-        </imagetype>
+        <shape name="backimg" from="basepopupbackground">
+            <area>0,0,100%,100%</area>
+        </shape>
 
         <textarea name="title_text" from="basetextarea">
             <area>20,10,460,40</area>
@@ -1222,14 +1197,14 @@
     </window>
 
     <window name="searchpopup" from="MythTextInputDialog">
-        <area>-1,10,580,165</area>
+        <area>-1,10,580,166</area>
 
-        <imagetype name="backimg">
-            <filename>mythprogressdialog-background.png</filename>
-        </imagetype>
+        <shape name="backimg" from="basepopupbackground">
+            <area>0,0,100%,100%</area>
+        </shape>
 
         <textarea name="message" from="basetextarea">
-            <area>20,15,540,30</area>
+            <area>20,14,540,30</area>
             <align>allcenter</align>
             <value>Enter Search Text</value>
         </textarea>
@@ -1239,7 +1214,7 @@
         </textedit>
 
         <button name="ok" from="basebutton">
-            <position>209,110</position>
+            <position>208,110</position>
             <value>Close</value>
         </button>
 
@@ -1471,7 +1446,7 @@
                     </textarea>
                     <textarea name="finalpriority" from="buttontext">
                         <area>710,0,40,27</area>
-                        <align>right,vcenter</align>
+                        <align>vcenter,right</align>
                     </textarea>
                 </state>
                 <state name="selectedactive" from="active">
@@ -1572,7 +1547,7 @@
         <textarea name="ruleslabel" from="basetextarea">
             <area>54,75,190,30</area>
             <font>basemedium</font>
-            <align>right</align>
+            <align>right,vcenter</align>
             <value>Existing Rules:</value>
         </textarea>
 
@@ -1582,7 +1557,7 @@
         </buttonlist>
 
         <textarea name="titlelabel" from="ruleslabel">
-            <position>54,125</position>
+            <position>54,135</position>
             <value>Rule Name:</value>
         </textarea>
 
@@ -1597,7 +1572,7 @@
 
         <textarea name="clausetext" from="ruleslabel">
             <area>54,240,692,40</area>
-            <align>left,vcenter</align>
+            <align>left,top</align>
             <cutdown>yes</cutdown>
         </textarea>
 
@@ -1885,67 +1860,76 @@
             <position>25,25</position>
         </group>
 
+        <checkbox name="metadatalookup" from="basecheckbox">
+            <position>160,225</position>
+        </checkbox>
+
+        <textarea name="metadatalookuplabel" from="basetextarea">
+            <area>200,230,450,30</area>
+            <value>Automatically Look Up Metadata</value>
+        </textarea>
+
         <checkbox name="autocommflag" from="basecheckbox">
-            <position>160,210</position>
+            <position>160,270</position>
         </checkbox>
 
         <textarea name="autocommflaglabel" from="basetextarea">
-            <area>200,217,440,30</area>
+            <area>200,275,440,30</area>
             <value>Commercial Flag new recordings</value>
         </textarea>
 
         <checkbox name="autotranscode" from="basecheckbox">
-            <position>160,255</position>
+            <position>160,315</position>
         </checkbox>
 
         <textarea name="autotranscodelabel" from="basetextarea">
-            <area>200,262,440,30</area>
+            <area>200,320,440,30</area>
             <value>Transcode new recordings</value>
         </textarea>
 
         <buttonlist name="transcodeprofile" from="basewideselector">
-            <area>160,300,480,40</area>
+            <area>160,360,480,40</area>
             <helptext></helptext>
         </buttonlist>
 
         <checkbox name="userjob1" from="basecheckbox">
-            <position>160,345</position>
+            <position>120,434</position>
         </checkbox>
 
         <textarea name="userjob1label" from="basetextarea">
-            <area>200,352,440,30</area>
+            <area>160,436,440,30</area>
             <value>Run User Job #1</value>
         </textarea>
 
         <checkbox name="userjob2" from="basecheckbox">
-            <position>160,390</position>
+            <position>120,480</position>
         </checkbox>
 
         <textarea name="userjob2label" from="basetextarea">
-            <area>200,397,440,30</area>
+            <area>160,482,440,30</area>
             <value>Run User Job #2</value>
         </textarea>
 
         <checkbox name="userjob3" from="basecheckbox">
-            <position>160,435</position>
+            <position>460,434</position>
         </checkbox>
 
         <textarea name="userjob3label" from="basetextarea">
-            <area>200,447,440,30</area>
+            <area>500,436,440,30</area>
             <value>Run User Job #3</value>
         </textarea>
 
         <checkbox name="userjob4" from="basecheckbox">
-            <position>160,480</position>
+            <position>460,480</position>
         </checkbox>
 
         <textarea name="userjob4label" from="basetextarea">
-            <area>200,487,440,30</area>
+            <area>500,482,440,30</area>
             <value>Run User Job #4</value>
         </textarea>
 
         <button name="back" from="basebutton">
-            <position>40,535</position>
+            <position>310,535</position>
             <value>Back</value>
         </button>
     </window>
