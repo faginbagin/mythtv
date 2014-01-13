@@ -52,7 +52,7 @@
             <solidcolor>#003256</solidcolor>
             <selector type="roundbox" linecolor="#ffff33" />
             <showcategories>yes</showcategories>
-            <categoryalpha>128</categoryalpha>
+            <categoryalpha>60</categoryalpha>
             <recordingcolor>#00aa00</recordingcolor>
             <conflictingcolor>#ff6600</conflictingcolor>
             <cutdown>no</cutdown>
@@ -108,7 +108,7 @@
                     <imagetype name="channelicon">
                         <area>0,16,40,40</area>
                     </imagetype>
-                    <textarea name="buttontext" from="basetextarea">
+                    <textarea name="channelname" from="basetextarea">
                         <area>40,0,95,76</area>
                         <font>basesmall</font>
                         <font state="favourite">basesmall_favorite</font>
@@ -117,6 +117,7 @@
                         <cutdown>no</cutdown>
                         <align>allcenter</align>
                         <multiline>yes</multiline>
+                        <template>%CHANNELNUMBER%\n%CALLSIGN%</template>
                     </textarea>
                 </state>
                 <state name="selectedactive" from="active"/>
@@ -221,7 +222,7 @@
             <solidcolor>#003256</solidcolor>
             <selector type="roundbox" linecolor="#ffff33" />
             <showcategories>yes</showcategories>
-            <categoryalpha>128</categoryalpha>
+            <categoryalpha>60</categoryalpha>
             <recordingcolor>#00aa00</recordingcolor>
             <conflictingcolor>#ff6600</conflictingcolor>
             <cutdown>no</cutdown>
@@ -279,7 +280,7 @@
                     <imagetype name="channelicon">
                         <area>0,12,40,40</area>
                     </imagetype>
-                    <textarea name="buttontext" from="basetextarea">
+                    <textarea name="channelname" from="basetextarea">
                         <area>40,0,95,65</area>
                         <font>basesmall</font>
                         <font state="favourite">basesmall_favorite</font>
@@ -288,6 +289,7 @@
                         <cutdown>no</cutdown>
                         <align>allcenter</align>
                         <multiline>yes</multiline>
+                        <template>%CHANNELNUMBER%\n%CALLSIGN%</template>
                     </textarea>
                 </state>
                 <state name="selectedactive" from="active"/>
@@ -365,7 +367,7 @@
         </textarea>
 
         <buttonlist name="startdate" from="basewideselector">
-            <position>300,280</position>
+            <area>300,280,480,40</area>
         </buttonlist>
 
         <textarea name="timelabel" from="titlelabel">
