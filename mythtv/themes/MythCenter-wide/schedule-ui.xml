@@ -217,12 +217,12 @@
         </imagetype>
 
         <textarea name="datetext" from="basetextarea">
-            <area>24,244,190,26</area>
+            <area>24,242,190,27</area>
             <align>top,hcenter</align>
         </textarea>
 
         <textarea name="channelgroup" from="basetextarea">
-            <area>24,270,190,26</area>
+            <area>24,269,190,27</area>
             <align>bottom,hcenter</align>
             <font>basesmall</font>
         </textarea>
@@ -626,16 +626,16 @@
                         <position>30,0</position>
                     </statetype>
                     <textarea name="channelnumber" from="buttontext">
-                        <area>60,2,150,-2</area>
+                        <area>60,0,150,30</area>
                     </textarea>
                     <textarea name="callsign" from="channelnumber">
-                        <area>220,2,250,-2</area>
+                        <area>220,0,250,30</area>
                     </textarea>
                     <textarea name="channelname" from="channelnumber">
-                        <area>570,2,550,-2</area>
+                        <area>570,0,550,30</area>
                     </textarea>
                     <textarea name="priority" from="channelnumber">
-                        <area>1130,2,40,-2</area>
+                        <area>1130,0,40,30</area>
                         <align>right</align>
                     </textarea>
                 </state>
@@ -976,7 +976,7 @@
         </textedit>
 
         <buttonlist name="category_list" from="basemediumselector">
-            <area>60,330,200,40</area>
+            <position>60,330</position>
         </buttonlist>
 
         <buttonlist name="genre_list" from="basemediumselector">
