@@ -133,7 +133,7 @@
     <window name="manager">
 
         <statetype name="parentallevel">
-            <position>740,10</position>
+            <area>740,10,40,40</area>
             <state name="None">
                 <imagetype name="icon">
                     <filename>mv_level_none.png</filename>
@@ -174,7 +174,7 @@
         </textarea>
 
         <textarea name="dirlbl" from="basetextarea">
-            <area>20,65,130,35</area>
+            <area>10,65,140,35</area>
             <font>basesmall</font>
             <align>right,top</align>
             <value>Director:</value>
@@ -186,16 +186,16 @@
         </textarea>
 
         <textarea name="yrlbl" from="dirlbl">
-            <position>500,65</position>
+            <area>420,65,210,35</area>
             <value>Year:</value>
         </textarea>
 
         <textarea name="year" from="director">
-            <area>650,65,100,35</area>
+            <area>640,65,130,35</area>
         </textarea>
 
         <textarea name="ratlbl" from="dirlbl">
-            <position>20,95</position>
+            <position>10,95</position>
             <value>Rated:</value>
         </textarea>
 
@@ -203,20 +203,20 @@
             <area>160,95,350,35</area>
         </textarea>
 
-        <textarea name="lvllbl" from="dirlbl">
-            <position>500,95</position>
+        <textarea name="lvllbl" from="yrlbl">
+            <position>420,95</position>
             <value>Parental Level:</value>
         </textarea>
 
         <statetype name="videolevel">
-            <position>645,90</position>
+            <area>636,95,164,35</area>
             <state name="Lowest">
                 <imagetype name="icon">
-                    <area>0,2,30,30</area>
+                    <area>0,0,30,30</area>
                     <filename>mv_level_lowest.png</filename>
                 </imagetype>
                 <textarea name="label">
-                    <area>35,6,100,35</area>
+                    <area>34,0,130,35</area>
                     <value>Lowest</value>
                     <font>basesmallyellow</font>
                 </textarea>
@@ -247,18 +247,18 @@
             </state>
         </statetype>
 
-        <textarea name="browselbl" from="dirlbl">
-            <position>500,125</position>
+        <textarea name="browselbl" from="yrlbl">
+            <position>420,125</position>
             <value>Browsable:</value>
             <align>right,top</align>
         </textarea>
 
         <textarea name="browseable" from="director">
-            <area>650,125,100,35</area>
+            <area>640,125,130,35</area>
         </textarea>
 
         <textarea name="lenlbl" from="dirlbl">
-            <position>20,125</position>
+            <position>10,125</position>
             <value>Runtime:</value>
         </textarea>
 
@@ -267,7 +267,7 @@
         </textarea>
 
         <textarea name="desclbl" from="dirlbl">
-            <position>20,155</position>
+            <position>10,155</position>
             <value>Plot:</value>
         </textarea>
 
@@ -276,16 +276,17 @@
         </textarea>
 
         <textarea name="fillbl" from="dirlbl">
-            <position>20,185</position>
+            <position>10,185</position>
             <value>Filename:</value>
         </textarea>
 
         <textarea name="filename" from="director">
             <area>160,185,600,35</area>
+            <cutdown>left</cutdown>
         </textarea>
 
         <textarea name="cvflbl" from="dirlbl">
-            <position>20,215</position>
+            <position>10,215</position>
             <value>Cover File:</value>
         </textarea>
 
@@ -294,7 +295,7 @@
         </textarea>
 
         <textarea name="imdblbl" from="dirlbl">
-            <position>20,245</position>
+            <position>10,245</position>
             <value>Video Num.:</value>
         </textarea>
 
@@ -303,49 +304,49 @@
         </textarea>
 
         <imagetype name="menu_background">
-            <position>0,270</position>
+            <position>0,276</position>
             <filename>cr-background.png</filename>
         </imagetype>
 
         <buttonlist name="videos">
-            <area>20,282,760,242</area>
+            <area>20,290,760,310</area>
             <layout>vertical</layout>
-            <spacing>5</spacing>
-            <buttonarea>0,0,760,250</buttonarea>
+            <spacing>0</spacing>
+            <buttonarea>0,0,760,256</buttonarea>
             <statetype name="buttonitem">
-                <area>0,0,760,25</area>
+                <area>0,0,760,32</area>
                 <state name="active">
                     <imagetype name="buttonimage">
-                        <area>0,2,25,25</area>
+                        <area>0,0,30,30</area>
                         <preserveaspect>yes</preserveaspect>
                         <filename>shared/grid_noimage.png</filename>
                     </imagetype>
                     <statetype name="nodetype">
-                        <position>0,9</position>
+                        <position>0,0</position>
                         <state name="subfolder">
                             <imagetype name="icon">
-                                <area>0,0,25,25</area>
+                                <area>0,0,30,30</area>
                                 <filename>shared/directory.png</filename>
                                 <preserveaspect>yes</preserveaspect>
                             </imagetype>
                         </state>
                         <state name="upfolder">
                             <imagetype name="icon">
-                                <area>0,0,25,25</area>
+                                <area>0,0,30,30</area>
                                 <filename>shared/updirectory.png</filename>
                                 <preserveaspect>yes</preserveaspect>
                             </imagetype>
                         </state>
                     </statetype>
                     <textarea name="buttontext" from="basetextarea">
-                        <area>30,4,250,30</area>
+                        <area>30,0,520,32</area>
                         <font>basesmallgrey</font>
                     </textarea>
                     <textarea name="director" from="buttontext">
-                        <area>380,4,150,25</area>
+                        <area>550,0,150,32</area>
                     </textarea>
                     <textarea name="year" from="buttontext">
-                        <area>670,4,50,25</area>
+                        <area>700,0,72,32</area>
                     </textarea>
                 </state>
                 <state name="selectedactive" from="active">
@@ -361,7 +362,7 @@
                 </state>
             </statetype>
             <statetype name="upscrollarrow">
-                <position>240,270</position>
+                <position>240,266</position>
                 <showempty>yes</showempty>
                 <state type="full">
                     <imagetype name="upon">
@@ -370,7 +371,7 @@
                 </state>
             </statetype>
             <statetype name="downscrollarrow">
-                <position>456,270</position>
+                <position>456,266</position>
                 <showempty>yes</showempty>
                 <state type="full">
                     <imagetype name="dnon">
@@ -616,7 +617,7 @@
                         <align>hcenter,bottom</align>
                     </textarea>
                     <textarea name="childcount" from="basetextarea">
-                        <area>60,95,80,25</area>
+                        <area>60,95,80,27</area>
                         <font>basesmallblack</font>
                         <align>right</align>
                     </textarea>
