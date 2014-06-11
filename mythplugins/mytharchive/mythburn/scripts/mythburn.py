@@ -2702,7 +2702,7 @@ def performMPEG2Shrink(files,dvdrsize):
         write( "Video files are %.1f Mb too big. Need to shrink." % ((totalvideosize - mv2space)/mega) )
 
         if path_M2VRequantiser[0] == "":
-            nonFatalError("M2VRequantiser is not available to resize the files.  Giving up!")
+            nonfatalError("M2VRequantiser is not available to resize the files.  Giving up!")
             return
 
         vsize=0
