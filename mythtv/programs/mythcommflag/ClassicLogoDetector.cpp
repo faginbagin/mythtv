@@ -11,6 +11,7 @@
 // Commercial Flagging headers
 #include "ClassicLogoDetector.h"
 #include "ClassicCommDetector.h"
+#include "commercial_debug.h"
 
 typedef struct edgemaskentry
 {
@@ -274,7 +275,7 @@ bool ClassicLogoDetector::searchForLogo(MythPlayer* player)
     delete [] edgeCounts;
 
     if (!logoInfoAvailable)
-        LOG(VB_COMMFLAG, LOG_NOTICE, "No suitable logo area found.");
+        LOG(VB_GENERAL, LOG_NOTICE, "No suitable logo area found.");
 
     player->DiscardVideoFrame(player->GetRawVideoFrame(0));
     return logoInfoAvailable;

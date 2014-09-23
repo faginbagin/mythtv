@@ -32,6 +32,7 @@ HEADERS += PrePostRollFlagger.h
 HEADERS += LogoDetectorBase.h SceneChangeDetectorBase.h
 HEADERS += SlotRelayer.h CustomEventRelayer.h
 HEADERS += commandlineparser.h
+HEADERS += commercial_debug.h
 
 SOURCES += CommDetectorFactory.cpp CommDetectorBase.cpp
 SOURCES += ClassicLogoDetector.cpp
@@ -49,6 +50,7 @@ SOURCES += HistogramAnalyzer.cpp
 SOURCES += BlankFrameDetector.cpp
 SOURCES += SceneChangeDetector.cpp
 SOURCES += PrePostRollFlagger.cpp
+SOURCES += commercial_debug.cpp
 
 SOURCES += main.cpp commandlineparser.cpp
 

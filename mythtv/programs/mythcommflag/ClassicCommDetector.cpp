@@ -26,6 +26,7 @@ using namespace std;
 #include "ClassicCommDetector.h"
 #include "ClassicLogoDetector.h"
 #include "ClassicSceneChangeDetector.h"
+#include "commercial_debug.h"
 
 enum frameAspects {
     COMM_ASPECT_NORMAL = 0,
