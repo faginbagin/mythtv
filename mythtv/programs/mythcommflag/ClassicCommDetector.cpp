@@ -1013,7 +1013,7 @@ void ClassicCommDetector::ProcessFrame(VideoFrame *frame,
                 frameInfo[curFrameNumber].flagMask ));
 
 #ifdef SHOW_DEBUG_WIN
-    comm_debug_show(frame->buf);
+    comm_debug_show(frame);
     getchar();
 #endif
 
