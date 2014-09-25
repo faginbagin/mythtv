@@ -5,8 +5,13 @@
 #define SHOW_DEBUG_WIN
 
 #ifdef SHOW_DEBUG_WIN
+
+#include "frame.h"
+
 extern void comm_debug_init( int width, int height );
 extern void comm_debug_show( unsigned char *frame );
+extern void comm_debug_show( VideoFrame *frame );
 extern void comm_debug_destroy();
+
 #endif
 

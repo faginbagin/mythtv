@@ -6,51 +6,44 @@
 
 #ifdef SHOW_DEBUG_WIN
 
-#include <X11/keysym.h>
-#include <X11/Xatom.h>
 #include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/extensions/XShm.h>
+//#include <X11/extensions/Xvlib.h>
 
 extern "C" {
 #include "libavcodec/avcodec.h"
 #include "libswscale/swscale.h"
 }
 
-Window comm_root;
 Window comm_win;
-Window comm_curwin;
 GC comm_gc;
-Screen *comm_screen;
 Display *comm_display;
 int comm_width = 0;
+int comm_width8 = 0;
 int comm_height = 0;
-int comm_screen_num;
 int comm_depth = 24;
-unsigned long comm_white, comm_black;
 XImage *comm_image = NULL;
 char *comm_buf = NULL;
-AVPicture image_in, image_out;
 struct SwsContext *scontext;
-AVPixelFormat av_format;
 
 void comm_debug_init( int width, int height )
 {
     comm_display = XOpenDisplay(NULL);
 
-    comm_screen = DefaultScreenOfDisplay(comm_display);
-    comm_screen_num = DefaultScreen(comm_display);
-
-    comm_root = DefaultRootWindow(comm_display);
-
-    comm_white = XWhitePixel(comm_display, comm_screen_num);
-    comm_black = XBlackPixel(comm_display, comm_screen_num);
+    Screen* comm_screen = DefaultScreenOfDisplay(comm_display);
+    int comm_screen_num = DefaultScreen(comm_display);
 
     comm_depth = DefaultDepthOfScreen(comm_screen);
 
-    comm_win = XCreateSimpleWindow(comm_display, comm_root, 100,
-                                    100, width, height, 0,
-                                    comm_white, comm_black );
+    comm_width = width;
+    // FFmpeg likes linesizes that are multiples of 8.
+    comm_width8 = (width + 7) & ~7;
+    comm_height = height;
+
+    comm_win = XCreateSimpleWindow(comm_display,
+                                   DefaultRootWindow(comm_display),
+                                   100, 100, comm_width, comm_height, 0,
+                                   XWhitePixel(comm_display, comm_screen_num),
+                                   XBlackPixel(comm_display, comm_screen_num) );
 
     XMapRaised(comm_display, comm_win);
 
@@ -58,25 +51,48 @@ void comm_debug_init( int width, int height )
 
     comm_gc = XCreateGC(comm_display, comm_win, 0, 0);
 
-    comm_buf = new char[4 * width * height];
+    comm_buf = new char[4 * comm_width8 * comm_height];
+    memset(comm_buf, 0, 4 * comm_width8 * comm_height);
 
     comm_image = XCreateImage(comm_display, DefaultVisual(comm_display, 0),
                               comm_depth, ZPixmap, 0, comm_buf,
-                              width, height, 8, 0);
+                              comm_width8, comm_height, 8, 0);
 
     XSync(comm_display, 0);
-
-    comm_width = width;
-    comm_height = height;
 
     printf( "Commercial Detection debug window created at %dx%dx%d\n",
         comm_width, comm_height, comm_depth );
 }
 
+static void comm_debug_show( AVPicture* pic);
+
 void comm_debug_show( unsigned char *frame )
 {
+    AVPicture image_in;
+
     avpicture_fill(&image_in, (uint8_t *)frame, PIX_FMT_YUV420P,
                    comm_width, comm_height);
+
+    comm_debug_show(&image_in);
+}
+
+void comm_debug_show( VideoFrame *frame )
+{
+    AVPicture image_in;
+
+    for (int i = 0; i < 3; i++)
+    {
+        image_in.data[i] = frame->buf + frame->offsets[i];
+        image_in.linesize[i] = frame->pitches[i];
+    }
+
+    comm_debug_show(&image_in);
+}
+
+void comm_debug_show(AVPicture* pic)
+{
+    AVPicture image_out;
+    AVPixelFormat av_format;
 
     switch (comm_depth)
     {
@@ -90,7 +106,7 @@ void comm_debug_show( unsigned char *frame )
     }
 
     avpicture_fill(&image_out, (uint8_t *)comm_image->data, av_format,
-                   comm_width, comm_height);
+                   comm_width8, comm_height);
 
     scontext = sws_getCachedContext(scontext, comm_width, comm_height,
         PIX_FMT_YUV420P, comm_width, comm_height, av_format,
@@ -101,7 +117,7 @@ void comm_debug_show( unsigned char *frame )
         exit(1);
     }
 
-    sws_scale(scontext, image_in.data, image_in.linesize, 0, comm_height,
+    sws_scale(scontext, pic->data, pic->linesize, 0, comm_height,
               image_out.data, image_out.linesize);
 
     XPutImage(comm_display, comm_win, comm_gc, comm_image,
