@@ -14,6 +14,15 @@ extern "C" {
 #include "libswscale/swscale.h"
 }
 
+// INPUT_PIX_FMT is used when we convert an input YUV420 frame to a RGB ZPixmap
+// Since the commercial detection algorithms only look at the Y luma channel,
+// it can be useful to display only that channel.
+// But there may be times when you want to see the color images.
+// If you want to display color images, use AV_PIX_FMT_YUV420P
+// If you want display grayscale images, use AV_PIX_FMT_GRAY8
+// #define INPUT_PIX_FMT   AV_PIX_FMT_YUV420P
+#define INPUT_PIX_FMT   AV_PIX_FMT_GRAY8
+
 Window comm_win;
 GC comm_gc;
 Display *comm_display;
@@ -70,7 +79,7 @@ void comm_debug_show( unsigned char *frame )
 {
     AVPicture image_in;
 
-    avpicture_fill(&image_in, (uint8_t *)frame, PIX_FMT_YUV420P,
+    avpicture_fill(&image_in, (uint8_t *)frame, AV_PIX_FMT_YUV420P,
                    comm_width, comm_height);
 
     comm_debug_show(&image_in);
@@ -96,9 +105,9 @@ void comm_debug_show(AVPicture* pic)
 
     switch (comm_depth)
     {
-        case 16: av_format = PIX_FMT_RGB565; break;
-        case 24: av_format = PIX_FMT_RGB32;  break;
-        case 32: av_format = PIX_FMT_RGB32; break;
+        case 16: av_format = AV_PIX_FMT_RGB565; break;
+        case 24: av_format = AV_PIX_FMT_RGB32;  break;
+        case 32: av_format = AV_PIX_FMT_RGB32; break;
         default:
             printf("Unable to display debug video window in %d depth.\n",
                    comm_depth);
@@ -109,7 +118,7 @@ void comm_debug_show(AVPicture* pic)
                    comm_width8, comm_height);
 
     scontext = sws_getCachedContext(scontext, comm_width, comm_height,
-        PIX_FMT_YUV420P, comm_width, comm_height, av_format,
+        INPUT_PIX_FMT, comm_width, comm_height, av_format,
         SWS_FAST_BILINEAR, NULL, NULL, NULL);
     if (!scontext)
     {

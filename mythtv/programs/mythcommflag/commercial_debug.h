@@ -2,7 +2,7 @@
 // This code is meant for use in debugging the CommDetect class and shouldn't
 // be used in normal compiled Myth versions.
 
-#define SHOW_DEBUG_WIN
+// #define SHOW_DEBUG_WIN
 
 #ifdef SHOW_DEBUG_WIN
 
