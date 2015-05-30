@@ -91,12 +91,12 @@ const uint k708AttrFontCasual                = 5;
 const uint k708AttrFontCursive               = 6;
 const uint k708AttrFontSmallCaps             = 7;
 
-extern const uint k708AttrEdgeNone            = 0;
-extern const uint k708AttrEdgeRaised          = 1;
-extern const uint k708AttrEdgeDepressed       = 2;
-extern const uint k708AttrEdgeUniform         = 3;
-extern const uint k708AttrEdgeLeftDropShadow  = 4;
-extern const uint k708AttrEdgeRightDropShadow = 5;
+const uint k708AttrEdgeNone            = 0;
+const uint k708AttrEdgeRaised          = 1;
+const uint k708AttrEdgeDepressed       = 2;
+const uint k708AttrEdgeUniform         = 3;
+const uint k708AttrEdgeLeftDropShadow  = 4;
+const uint k708AttrEdgeRightDropShadow = 5;
 
 const uint k708AttrColorBlack         = 0;
 const uint k708AttrColorWhite         = 63;
@@ -107,7 +107,7 @@ const uint k708AttrOpacityTranslucent = 2;
 const uint k708AttrOpacityTransparent = 3;
 
 CC708Window::CC708Window()
-    : priority(0),              m_visible(0),
+    : priority(0),              m_visible(false),
       anchor_point(0),          relative_pos(0),
       anchor_vertical(0),       anchor_horizontal(0),
       row_count(0),             column_count(0),
@@ -185,6 +185,9 @@ void CC708Window::Resize(uint new_rows, uint new_columns)
     }
     if (new_rows > true_row_count || new_columns > true_column_count)
     {
+        new_rows = max(new_rows, true_row_count);
+        new_columns = max(new_columns, true_column_count);
+
         // Expand the array if the new size exceeds the current capacity
         // in either dimension.
         CC708Character *new_text =
@@ -362,6 +365,15 @@ vector<CC708String*> CC708Window::GetStrings(void) const
     return list;
 }
 
+void CC708Window::DisposeStrings(vector<CC708String*> &strings) const
+{
+    while (!strings.empty())
+    {
+        delete strings.back();
+        strings.pop_back();
+    }
+}
+
 void CC708Window::SetWindowStyle(uint style)
 {
     const uint style2justify[] =
@@ -403,7 +415,7 @@ void CC708Window::AddChar(QChar ch)
 
     if (!IsPenValid())
     {
-        LOG(VB_VBI, LOG_INFO,
+        LOG(VB_VBI, LOG_DEBUG,
             QString("AddChar(%1) at (c %2, r %3) INVALID win(%4,%5)")
                 .arg(dbg_char).arg(pen.column).arg(pen.row)
                 .arg(true_column_count).arg(true_row_count));
@@ -436,7 +448,7 @@ void CC708Window::AddChar(QChar ch)
     IncrPenLocation();
     SetChanged();
 
-    LOG(VB_VBI, LOG_INFO, QString("AddChar(%1) at (c %2, r %3) -> (%4,%5)")
+    LOG(VB_VBI, LOG_DEBUG, QString("AddChar(%1) at (c %2, r %3) -> (%4,%5)")
             .arg(dbg_char).arg(c).arg(r).arg(pen.column).arg(pen.row));
 }
 
@@ -485,7 +497,7 @@ void CC708Window::IncrPenLocation(void)
     new_row    += (print_dir == k708DirBottomToTop) ? -1 : 0;
 
 #if 0
-    LOG(VB_VBI, LOG_INFO, QString("IncrPen dir%1: (c %2, r %3) -> (%4,%5)")
+    LOG(VB_VBI, LOG_DEBUG, QString("IncrPen dir%1: (c %2, r %3) -> (%4,%5)")
             .arg(print_dir).arg(pen.column).arg(pen.row)
             .arg(new_column).arg(new_row));
 #endif
@@ -527,7 +539,7 @@ void CC708Window::DecrPenLocation(void)
     new_row    -= (print_dir == k708DirBottomToTop) ? -1 : 0;
 
 #if 0
-    LOG(VB_VBI, LOG_INFO, QString("DecrPen dir%1: (c %2, r %3) -> (%4,%5)")
+    LOG(VB_VBI, LOG_DEBUG, QString("DecrPen dir%1: (c %2, r %3) -> (%4,%5)")
             .arg(print_dir).arg(pen.column).arg(pen.row)
             .arg(new_column).arg(new_row));
 #endif

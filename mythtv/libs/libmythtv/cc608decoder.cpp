@@ -66,15 +66,15 @@ CC608Decoder::CC608Decoder(CC608Input *ccr)
     // fill translation table
     for (uint i = 0; i < 128; i++)
         stdchar[i] = QChar(i);
-    stdchar[42]  = 'á';
-    stdchar[92]  = 'é';
-    stdchar[94]  = 'í';
-    stdchar[95]  = 'ó';
-    stdchar[96]  = 'ú';
-    stdchar[123] = 'ç';
-    stdchar[124] = '÷';
-    stdchar[125] = 'Ñ';
-    stdchar[126] = 'ñ';
+    stdchar[42]  = QLatin1Char('á');
+    stdchar[92]  = QLatin1Char('é');
+    stdchar[94]  = QLatin1Char('í');
+    stdchar[95]  = QLatin1Char('ó');
+    stdchar[96]  = QLatin1Char('ú');
+    stdchar[123] = QLatin1Char('ç');
+    stdchar[124] = QLatin1Char('÷');
+    stdchar[125] = QLatin1Char('Ñ');
+    stdchar[126] = QLatin1Char('ñ');
     stdchar[127] = 0x2588; /* full block */
 
     // VPS data (MS Windows doesn't like bzero())
@@ -120,25 +120,34 @@ static const int rowdata[] =
 
 static const QChar specialchar[] =
 {
-    '®', '°', '½', '¿', 0x2122 /* TM */, '¢', '£', 0x266A /* 1/8 note */,
-    'à', ' ', 'è', 'â', 'ê', 'î', 'ô', 'û'
+    QLatin1Char('®'), QLatin1Char('°'), QLatin1Char('½'), QLatin1Char('¿'),
+    0x2122 /* TM */,  QLatin1Char('¢'), QLatin1Char('£'), 0x266A /* 1/8 note */,
+    QLatin1Char('à'), QLatin1Char(' '), QLatin1Char('è'), QLatin1Char('â'),
+    QLatin1Char('ê'), QLatin1Char('î'), QLatin1Char('ô'), QLatin1Char('û')
 };
 
 static const QChar extendedchar2[] =
 {
-    'Á', 'É', 'Ó', 'Ú', 'Ü', 'ü', '`', '¡',
-    '*', '\'', 0x2014 /* dash */, '©',
-    0x2120 /* SM */, '·', 0x201C, 0x201D /* double quotes */,
-    'À', 'Â', 'Ç', 'È', 'Ê', 'Ë', 'ë', 'Î',
-    'Ï', 'ï', 'Ô', 'Ù', 'ù', 'Û', '«', '»'
+    QLatin1Char('Á'), QLatin1Char('É'),  QLatin1Char('Ó'), QLatin1Char('Ú'),
+    QLatin1Char('Ü'), QLatin1Char('ü'),  QLatin1Char('`'), QLatin1Char('¡'),
+    QLatin1Char('*'), QLatin1Char('\''), 0x2014 /* dash */, QLatin1Char('©'),
+    0x2120 /* SM */,  QLatin1Char('·'),  0x201C, 0x201D /* double quotes */,
+    QLatin1Char('À'), QLatin1Char('Â'),  QLatin1Char('Ç'), QLatin1Char('È'),
+    QLatin1Char('Ê'), QLatin1Char('Ë'),  QLatin1Char('ë'), QLatin1Char('Î'),
+    QLatin1Char('Ï'), QLatin1Char('ï'),  QLatin1Char('Ô'), QLatin1Char('Ù'),
+    QLatin1Char('ù'), QLatin1Char('Û'),  QLatin1Char('«'), QLatin1Char('»')
 };
 
 static const QChar extendedchar3[] =
 {
-    'Ã', 'ã', 'Í', 'Ì', 'ì', 'Ò', 'ò', 'Õ',
-    'õ', '{', '}', '\\', '^', '_', '¦', '~',
-    'Ä', 'ä', 'Ö', 'ö', 'ß', '¥', '¤', '|',
-    'Å', 'å', 'Ø', 'ø', 0x250C, 0x2510, 0x2514, 0x2518 /* box drawing */
+    QLatin1Char('Ã'), QLatin1Char('ã'), QLatin1Char('Í'), QLatin1Char('Ì'),
+    QLatin1Char('ì'), QLatin1Char('Ò'), QLatin1Char('ò'), QLatin1Char('Õ'),
+    QLatin1Char('õ'), QLatin1Char('{'), QLatin1Char('}'), QLatin1Char('\\'),
+    QLatin1Char('^'), QLatin1Char('_'), QLatin1Char('¦'), QLatin1Char('~'),
+    QLatin1Char('Ä'), QLatin1Char('ä'), QLatin1Char('Ö'), QLatin1Char('ö'),
+    QLatin1Char('ß'), QLatin1Char('¥'), QLatin1Char('¤'), QLatin1Char('|'),
+    QLatin1Char('Å'), QLatin1Char('å'), QLatin1Char('Ø'), QLatin1Char('ø'),
+    0x250C, 0x2510, 0x2514, 0x2518 /* box drawing */
 };
 
 void CC608Decoder::FormatCCField(int tc, int field, int data)
@@ -175,17 +184,25 @@ void CC608Decoder::FormatCCField(int tc, int field, int data)
     b1 = data & 0x7f;
     b2 = (data >> 8) & 0x7f;
 #if 1
-    LOG(VB_VBI, LOG_DEBUG, QString("Format CC @%1/%2 = %3 %4")
-                    .arg(tc).arg(field)
-                    .arg((data&0xff), 2, 16)
-                    .arg((data&0xff00)>>8, 2, 16));
+    LOG(VB_VBI, LOG_DEBUG,
+        QString("Format CC @%1/%2 = %3 %4, %5/%6 = '%7' '%8'")
+        .arg(tc).arg(field)
+        .arg((data&0xff), 2, 16)
+        .arg((data&0xff00)>>8, 2, 16)
+        .arg(b1, 2, 16, QChar('0'))
+        .arg(b2, 2, 16, QChar('0'))
+        .arg(QChar((b1 & 0x60) ? b1 : '_'))
+        .arg(QChar((b2 & 0x60) ? b2 : '_')));
 #endif
     if (ccmode[field] >= 0)
     {
         mode = field << 2 |
             (txtmode[field*2 + ccmode[field]] << 1) |
             ccmode[field];
-        len = ccbuf[mode].length();
+        if (mode >= 0)
+            len = ccbuf[mode].length();
+        else
+            len = 0;
     }
     else
     {
@@ -307,7 +324,7 @@ void CC608Decoder::FormatCCField(int tc, int field, int data)
             {
                 case 0x00:          //attribute
 #if 0
-                    LOG(VB_VBI, LOG_DEBUG, 
+                    LOG(VB_VBI, LOG_DEBUG,
                         QString("<ATTRIBUTE %1 %2>").arg(b1).arg(b2));
 #endif
                     break;
@@ -1431,7 +1448,7 @@ bool CC608Decoder::XDSPacketParseProgram(
         }
         else
         {
-            LOG(VB_VBI, LOG_ERR, loc + 
+            LOG(VB_VBI, LOG_ERR, loc +
                     QString("VChip Unhandled -- rs(%1) rating(%2:%3)")
                 .arg(rating_system).arg(tv_rating).arg(movie_rating));
         }
@@ -1680,7 +1697,7 @@ static void init_xds_program_type(QString xds_program_type[96])
                                                        "Suspense");
     xds_program_type[88] = QCoreApplication::translate("(Categories)",
                                                        "Talk");
-    xds_program_type[89] = QCoreApplication::translate("(Categories)", 
+    xds_program_type[89] = QCoreApplication::translate("(Categories)",
                                                        "Technical");
     xds_program_type[90] = QCoreApplication::translate("(Categories)",
                                                        "Tennis");
