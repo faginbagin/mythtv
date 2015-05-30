@@ -35,8 +35,8 @@ public:
         : text(t), m_format(formatting), parent(p), textFont(NULL) {}
     FormattedTextChunk(void) : parent(NULL), textFont(NULL) {}
 
-    QSize CalcSize(float layoutSpacing = 0.0f) const;
-    void CalcPadding(bool isFirst, bool isLast, int &left, int &right) const;
+    QSize CalcSize(float layoutSpacing = 0.0f);
+    void CalcPadding(bool isFirst, bool isLast, int &left, int &right);
     bool Split(FormattedTextChunk &newChunk);
     QString ToLogString(void) const;
     bool PreRender(bool isFirst, bool isLast, int &x, int y, int height);
@@ -59,7 +59,7 @@ public:
     FormattedTextLine(int x = -1, int y = -1, int o_x = -1, int o_y = -1)
         : x_indent(x), y_indent(y), orig_x(o_x), orig_y(o_y) {}
 
-    QSize CalcSize(float layoutSpacing = 0.0f) const;
+    QSize CalcSize(float layoutSpacing = 0.0f, bool addPadding = true);
 
     QList<FormattedTextChunk> chunks;
     int x_indent; // -1 means TBD i.e. centered
@@ -190,12 +190,14 @@ public:
 
     QSize CalcTextSize(const QString &text,
                        const CC708CharacterAttribute &format,
-                       float layoutSpacing) const;
+                       float layoutSpacing,
+                       MythFontProperties* mythfont = 0) const;
     void CalcPadding(const CC708CharacterAttribute &format,
                      bool isFirst, bool isLast,
-                     int &left, int &right) const;
+                     int &left, int &right,
+                     MythFontProperties* mythfont = 0) const;
     MythFontProperties* GetFont(const CC708CharacterAttribute &attr) const;
-    void SetFontSize(int pixelSize) { m_fontSize = pixelSize; }
+    QRect GetSafeArea();
 
     // Temporary methods until teletextscreen.cpp is refactored into
     // subtitlescreen.cpp
@@ -230,7 +232,6 @@ private:
     QRect              m_safeArea;
     QRegExp            m_removeHTML;
     int                m_subtitleType;
-    int                m_fontSize;
     int                m_textFontZoom; // valid for 708 & text subs
     int                m_textFontZoomPrev;
     int                m_textFontDelayMs; // valid for text subs

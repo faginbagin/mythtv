@@ -72,6 +72,72 @@ public:
     MythImage *GetImage(void) { return m_Images[0]; }
 };
 
+// Used to lookup fonts by family, attributes, zoom and stretch factors.
+class SubtitleFontKey
+{
+    public:
+        SubtitleFontKey(const QString &family,
+                        const CC708CharacterAttribute &attr,
+                        int zoom, int stretch)
+            : m_family(family), m_attr(attr), m_zoom(zoom), m_stretch(stretch)
+            {}
+        ~SubtitleFontKey(void) {}
+
+        QString m_family;
+        CC708CharacterAttribute m_attr;
+        int m_zoom;
+        int m_stretch;
+
+        bool operator==(const SubtitleFontKey &other) const;
+};
+
+bool
+SubtitleFontKey::operator==(const SubtitleFontKey &other) const
+{
+    return
+        (m_family              == other.m_family &&
+        m_attr.pen_size        == other.m_attr.pen_size &&
+        m_attr.offset          == other.m_attr.offset &&
+        m_attr.text_tag        == other.m_attr.text_tag &&
+        m_attr.font_tag        == other.m_attr.font_tag &&
+        m_attr.edge_type       == other.m_attr.edge_type &&
+        m_attr.underline       == other.m_attr.underline &&
+        m_attr.italics         == other.m_attr.italics &&
+        m_attr.boldface        == other.m_attr.boldface &&
+        m_attr.fg_color        == other.m_attr.fg_color &&
+        m_attr.fg_opacity      == other.m_attr.fg_opacity &&
+        m_attr.bg_color        == other.m_attr.bg_color &&
+        m_attr.bg_opacity      == other.m_attr.bg_opacity &&
+        m_attr.edge_color      == other.m_attr.edge_color &&
+        m_attr.actual_fg_color == other.m_attr.actual_fg_color &&
+        m_zoom                 == other.m_zoom &&
+        m_stretch              == other.m_stretch);
+}
+
+uint qHash(const SubtitleFontKey &key);
+
+uint
+qHash(const SubtitleFontKey &key)
+{
+    return qHash(key.m_family) +
+        key.m_attr.pen_size +
+        key.m_attr.offset +
+        key.m_attr.text_tag +
+        key.m_attr.font_tag +
+        key.m_attr.edge_type +
+        key.m_attr.underline +
+        key.m_attr.italics +
+        key.m_attr.boldface +
+        key.m_attr.fg_color +
+        key.m_attr.fg_opacity +
+        key.m_attr.bg_color +
+        key.m_attr.bg_opacity +
+        key.m_attr.edge_color +
+        qHash(key.m_attr.actual_fg_color.name()) +
+        key.m_zoom +
+        key.m_stretch;
+}
+
 ////////////////////////////////////////////////////////////////////////////
 
 // Class SubtitleFormat manages fonts and backgrounds for subtitles.
@@ -130,11 +196,13 @@ public:
 class SubtitleFormat
 {
 public:
-    SubtitleFormat(void) {}
+    SubtitleFormat(SubtitleScreen* screen = 0,
+                   MythPlayer *player = 0,
+                   int stretch = 100);
     ~SubtitleFormat(void);
     MythFontProperties *GetFont(const QString &family,
                                 const CC708CharacterAttribute &attr,
-                                int pixelSize, int zoom, int stretch);
+                                int zoom);
     SubShape *GetBackground(MythUIType *parent, const QString &name,
                             const QString &family,
                             const CC708CharacterAttribute &attr,
@@ -144,6 +212,13 @@ public:
     int GetBackgroundAlpha(const QString &family);
     static QString MakePrefix(const QString &family,
                               const CC708CharacterAttribute &attr);
+
+    // Temporary method until teletextscreen.cpp is refactored into
+    // subtitlescreen.cpp
+    // GetTeletextFontName is the only public method that should be called
+    // when m_subScreen and m_player are null
+    QString GetTeletextFontName(void);
+
 private:
     void Load(const QString &family,
               const CC708CharacterAttribute &attr);
@@ -165,6 +240,7 @@ private:
                               MythUIShape *bg1,
                               MythUIShape *bg2);
 
+    // Hash table of default font properties by family
     QHash<QString, MythFontProperties *> m_fontMap;
     QHash<QString, MythUIShape *>       m_shapeMap;
     QHash<QString, QSet<QString> >     m_changeMap;
@@ -174,7 +250,14 @@ private:
     QHash<QString, int>             m_pixelSizeMap;
     QHash<QString, int>           m_outlineSizeMap;
     QHash<QString, QPoint>       m_shadowOffsetMap;
+
+    // Hash table of font properties by family, atttributes, zoom & stretch
+    QHash<SubtitleFontKey, MythFontProperties *> m_fullFontMap;
+
     QVector<MythUIType *> m_cleanup;
+    SubtitleScreen* m_subScreen;
+    MythPlayer* m_player;
+    int m_fontStretch;
 };
 
 static const QString kSubProvider("provider");
@@ -244,28 +327,36 @@ static QString fontToString(MythFontProperties *f)
 MythFontProperties *
 SubtitleFormat::GetFont(const QString &family,
                         const CC708CharacterAttribute &attr,
-                        int pixelSize, int zoom, int stretch)
+                        int zoom)
 {
-    int origPixelSize = pixelSize;
+    QString prefix = MakePrefix(family, attr);
+    SubtitleFontKey key(prefix, attr, zoom, m_fontStretch);
+    if (m_fullFontMap.contains(key))
+        return m_fullFontMap[key];
+
+    if (!m_fontMap.contains(prefix))
+        Load(family, attr);
+
+    // Make a copy we can modify once and reuse many times
+    MythFontProperties *result = new MythFontProperties(*(m_fontMap[prefix]));
+    m_fullFontMap[key] = result;
+
     float scale = zoom / 100.0;
     if ((attr.pen_size & 0x3) == k708AttrSizeSmall)
         scale = scale * 32 / 42;
     else if ((attr.pen_size & 0x3) == k708AttrSizeLarge)
         scale = scale * 42 / 32;
 
-    QString prefix = MakePrefix(family, attr);
-    if (!m_fontMap.contains(prefix))
-        Load(family, attr);
-    MythFontProperties *result = m_fontMap[prefix];
-
     // Apply the scaling factor to pixelSize even if the theme
     // explicitly sets pixelSize.
-    if (!IsUnlocked(prefix, kSubAttrPixelsize))
-        pixelSize = m_pixelSizeMap[prefix];
+    int pixelSize = m_pixelSizeMap[prefix];
+    int origPixelSize = pixelSize;
     pixelSize *= scale;
     result->GetFace()->setPixelSize(pixelSize);
 
-    result->GetFace()->setStretch(stretch);
+    // Stretch is now set in SubtitleFormat::Load
+    // result->GetFace()->setStretch(stretch);
+
     if (IsUnlocked(prefix, kSubAttrItalics))
         result->GetFace()->setItalic(attr.italics);
     if (IsUnlocked(prefix, kSubAttrUnderline))
@@ -301,7 +392,9 @@ SubtitleFormat::GetFont(const QString &family,
     else
     {
         offset = m_shadowOffsetMap[prefix];
-        offset.NormPoint();
+        // Shadow offset has already been scaled from theme to screen
+        // Why do it again?
+        // offset.NormPoint();
         offset.setX(offset.x() * scale + 0.5);
         offset.setY(offset.y() * scale + 0.5);
     }
@@ -329,22 +422,47 @@ SubtitleFormat::GetFont(const QString &family,
     else
     {
         off = m_outlineSizeMap[prefix];
-        MythPoint point(off, off);
-        point.NormPoint();
-        off = point.x() * scale + 0.5;
+        // Outline has already been scaled by SubtitleFormat::Load.
+        // Why do it again?
+        // MythPoint point(off, off);
+        // point.NormPoint();
+        off = off * scale + 0.5;
     }
     result->SetOutline(outline, color, off, alpha);
 
     LOG(VB_VBI, LOG_DEBUG,
         QString("GetFont(family=%1, prefix=%2, orig pixelSize=%3, "
-                "new pixelSize=%4 zoom=%5) = %6")
-        .arg(family).arg(prefix).arg(origPixelSize).arg(pixelSize)
-        .arg(zoom).arg(fontToString(result)));
+                "zoom=%4, stretch=%5) = %6")
+        .arg(family).arg(prefix).arg(origPixelSize)
+        .arg(zoom).arg(m_fontStretch).arg(fontToString(result)));
     return result;
+}
+
+QString SubtitleFormat::GetTeletextFontName(void)
+{
+    CC708CharacterAttribute attr(false, false, false, Qt::white);
+
+    QString prefix = MakePrefix(kSubFamilyTeletext, attr);
+    if (!m_fontMap.contains(prefix))
+        Load(kSubFamilyTeletext, attr);
+    MythFontProperties *result = m_fontMap[prefix];
+    return result->face().family();
+}
+
+SubtitleFormat::SubtitleFormat(SubtitleScreen* screen, MythPlayer* player,
+                               int stretch) :
+    m_subScreen(screen), m_player(player), m_fontStretch(stretch)
+{
 }
 
 SubtitleFormat::~SubtitleFormat(void)
 {
+    QHash<SubtitleFontKey, MythFontProperties*>::const_iterator it;
+    for (it = m_fullFontMap.constBegin(); it !=  m_fullFontMap.constEnd(); it++)
+    {
+        delete (*it);
+    }
+
     for (int i = 0; i < m_cleanup.size(); ++i)
     {
         m_cleanup[i]->DeleteAllChildren();
@@ -412,9 +530,15 @@ void SubtitleFormat::CreateProviderDefault(const QString &family,
 
     if (isComplement)
         Complement(font, bg);
-    parent->AddFont(kSubProvider, font);
 
-    *returnFont = font;
+    // This ultimately calls FontMap::AddFont, which makes a deep copy
+    // so we need to delete font.
+    // In case something changes underneath, we make sure the value
+    // returned by parent->GetFont is indeed different.
+    parent->AddFont(kSubProvider, font);
+    *returnFont = parent->GetFont(kSubProvider);
+    if (*returnFont != font)
+        delete font;
     *returnBg = bg;
 }
 
@@ -511,14 +635,144 @@ void SubtitleFormat::Load(const QString &family,
     QPoint offset;
     QColor color;
     int alpha;
-    int size;
     resultFont->GetShadow(offset, color, alpha);
-    resultFont->GetOutline(color, size, alpha);
-    m_outlineSizeMap[prefix] = size;
     m_shadowOffsetMap[prefix] = offset;
-    m_pixelSizeMap[prefix] = resultFont->GetFace()->pixelSize();
 
-    delete negFont;
+    // Shadow offset is scaled from theme to screen when it is parsed.
+    // But outline size is not.
+    // As long as this inconsistency exists, we scale outline size here.
+    int size;
+    resultFont->GetOutline(color, size, alpha);
+    MythPoint outline(size, size);
+    outline.NormPoint();
+    size = outline.x();
+    m_outlineSizeMap[prefix] = size;
+
+    // Fixed memory leak in SubtitleFormat::CreateProviderDefault,
+    // so negFont shouldn't be deleted here.
+    // It will be deleted later when negParent is deleted via m_cleanup
+    // delete negFont;
+
+    // Font stretch is constant for the life of each SubtitleScreen instance.
+    // So the same is true for SubtitleFormat.
+    // It is 100 for most playback profiles.
+    // But the Slim profile changes it whenever the video zoom factor changes.
+    // When that happens, the current SubtitleScreen is deleted
+    // and a new SubtitleScreen with a new font stretch is instantiated.
+    resultFont->GetFace()->setStretch(m_fontStretch);
+
+    // If the user hasn't defined a pixelsize
+    // and not called via teletextscreen.cpp (where m_subScreen is null),
+    // set a default
+    if (IsUnlocked(prefix, kSubAttrPixelsize) && m_subScreen != 0)
+    {
+        QRect safeArea = m_subScreen->GetSafeArea();
+        LOG(VB_VBI, LOG_DEBUG,
+            QString("safeArea=%1x%2@%3,%4")
+            .arg(safeArea.width())
+            .arg(safeArea.height())
+            .arg(safeArea.x())
+            .arg(safeArea.y()));
+
+        // Start with 608 row,col dimensions
+        int cols = 32;    // 608 max columns
+        int rows = 15;    // 608 max rows
+
+        // Adjust by family
+        if (kSubFamily708 == family || kSubFamilyText == family)
+        {
+            // Assumption: .srt and .txt line lengths will be within
+            // the limits of 708 captions, whose # of columns depends on
+            // the source video's aspect ratio.
+            cols = (m_player->GetVideoAspect() > 1.4f) ? 42 : 32;
+            rows = 15;
+        }
+        //else if (kSubFamilyAV == family)
+        //{
+        //    DVB bitmapped subtitles?
+        //}
+        else if (kSubFamilyTeletext == family)
+        {
+            // Constants defined in teletextscreen.cpp
+            // Copied values rather than depend on something that
+            // going to be refactored?
+            cols = 40; // TeletextScreen::kTeletextColumns
+            rows = 26; // TeletextScreen::kTeletextRows
+        }
+
+        // Add one to cols to account for 1/2 char width left&right padding.
+        cols++;
+
+        // Target lineHeight
+        int lineHeight = safeArea.height() / rows;
+
+        // Set pixelSize to the target lineHeight
+        int pixelSize = lineHeight;
+        // Reduce by shadow offset or outline size
+        pixelSize -= max(abs(offset.y()), size);
+        // It is a first guess pixelSize, which will almost certainly be off
+
+        QFont *font = resultFont->GetFace();
+        font->setPixelSize(pixelSize);
+        QFontMetrics fm(*font);
+
+        // Font metrics for various fonts are inconsistent in how
+        // they provide a realistic line height value.
+        // The max of what they call height and lineSpacing
+        // provides a resonable value for most fonts.
+        int newLineHeight = max(fm.height(), fm.lineSpacing());
+        // Increase by shadow offset or outline size
+        newLineHeight += max(abs(offset.y()), size);
+
+        int offBy = newLineHeight - lineHeight;
+        int newPixelSize = pixelSize;
+        if (offBy != 0)
+        {
+            // We tried a pixelSize equal to the desired line height
+            // with shadow & outline adjustments,
+            // but it didn't quite get us there.
+            // We make a better guess by applying a ratio of
+            // our first guess divided by the actual height.
+            // This should be "good enough" for most fonts.
+            newPixelSize = (int)((float)pixelSize*pixelSize/newLineHeight + 0.5);
+            font->setPixelSize(newPixelSize);
+            fm = QFontMetrics(*font);
+            newLineHeight = max(fm.height(), fm.lineSpacing());
+            newLineHeight += max(abs(offset.y()), size);
+        }
+
+        int fontwidth = fm.averageCharWidth();
+        int maxwidth = (safeArea.width() - max(abs(offset.x()), size)) / cols;
+
+        LOG(VB_VBI, LOG_DEBUG,
+            QString("family=%1 default-pixelSize=%2->%3 lineHeight=%4->%5 "
+                    "offBy=%6 fontwidth=%7 maxwidth=%8 shadow-offset=%9,%10 "
+                    "outline=%11")
+            .arg(family).arg(pixelSize).arg(newPixelSize)
+            .arg(lineHeight).arg(newLineHeight)
+            .arg(offBy).arg(fontwidth).arg(maxwidth)
+            .arg(offset.x()).arg(offset.y()).arg(size));
+
+        // Check if fontwidth exceeds maxwidth
+        // Just log it for now. We'll deal with it, if/when someone
+        // reports a problem.
+        if (fontwidth > maxwidth)
+        {
+            LOG(VB_GENERAL, LOG_WARNING,
+                QString("fontwidth=%1 exceeds maxwidth=%2")
+                .arg(fontwidth).arg(maxwidth));
+        }
+
+        m_pixelSizeMap[prefix] = newPixelSize;
+    }
+    else
+    {
+        int pixelSize = resultFont->GetFace()->pixelSize();
+        LOG(VB_VBI, LOG_DEBUG,
+            QString("family=%1 user defined pixelSize=%2")
+            .arg(family).arg(pixelSize));
+        m_pixelSizeMap[prefix] = pixelSize;
+    }
 }
 
 QSet<QString> SubtitleFormat::Diff(const QString &family,
@@ -637,15 +891,19 @@ int SubtitleFormat::GetBackgroundAlpha(const QString &family)
 
 ////////////////////////////////////////////////////////////////////////////
 
-QSize FormattedTextChunk::CalcSize(float layoutSpacing) const
+QSize FormattedTextChunk::CalcSize(float layoutSpacing)
 {
-    return parent->CalcTextSize(text, m_format, layoutSpacing);
+    if (!textFont)
+        textFont = parent->GetFont(m_format);
+    return parent->CalcTextSize(text, m_format, layoutSpacing, textFont);
 }
 
 void FormattedTextChunk::CalcPadding(bool isFirst, bool isLast,
-                                     int &left, int &right) const
+                                     int &left, int &right)
 {
-    parent->CalcPadding(m_format, isFirst, isLast, left, right);
+    if (!textFont)
+        textFont = parent->GetFont(m_format);
+    parent->CalcPadding(m_format, isFirst, isLast, left, right, textFont);
 }
 
 bool FormattedTextChunk::Split(FormattedTextChunk &newChunk)
@@ -695,9 +953,9 @@ QString FormattedTextChunk::ToLogString(void) const
 bool FormattedTextChunk::PreRender(bool isFirst, bool isLast,
                                    int &x, int y, int height)
 {
-    textFont = parent->GetFont(m_format);
     if (!textFont)
-        return false;
+        textFont = parent->GetFont(m_format);
+
     QFontMetrics font(*(textFont->GetFace()));
     // If the chunk starts with whitespace, the leading whitespace
     // ultimately gets lost due to the text.trimmed() operation in the
@@ -712,8 +970,10 @@ bool FormattedTextChunk::PreRender(bool isFirst, bool isLast,
     int leftPadding, rightPadding;
     CalcPadding(isFirst, isLast, leftPadding, rightPadding);
     // Account for extra padding before the first chunk.
-    if (isFirst)
-        x += leftPadding;
+    // No, this will cause everything to be off center to the right
+    // by the value of leftPadding.
+    // if (isFirst)
+    //     x += leftPadding;
     QSize chunk_sz = CalcSize();
     QRect bgrect(x - leftPadding, y,
                  chunk_sz.width() + leftPadding + rightPadding,
@@ -732,23 +992,41 @@ bool FormattedTextChunk::PreRender(bool isFirst, bool isLast,
     textRect = QRect(x + x_adjust, y,
                      chunk_sz.width() - x_adjust + rightPadding, height);
 
+    // If this chunk is in italics, add a few pixels to the width.
+    // This is to compensate for some font/char combos that would otherwise
+    // have the top right corner of the last char clipped.
+    // The effect can be seen with Droid Sans Mono and certain upper case chars
+    // like E or W.
+    // But don't add this padding to the next chunk's x coordinate.
+    // That would add too much spacing between chunks.
+    if (m_format.italics)
+    {
+        int oldWidth = textRect.width();
+        textRect.setWidth(oldWidth + font.averageCharWidth() / 2);
+        LOG(VB_VBI, LOG_DEBUG,
+            QString("Pad for italics width %1 -> %2")
+            .arg(oldWidth).arg(textRect.width()));
+    }
+
     x += chunk_sz.width();
     return true;
 }
 
-QSize FormattedTextLine::CalcSize(float layoutSpacing) const
+QSize FormattedTextLine::CalcSize(float layoutSpacing, bool addPadding)
 {
     int height = 0, width = 0;
     int leftPadding = 0, rightPadding = 0;
-    QList<FormattedTextChunk>::const_iterator it;
-    bool isFirst = true;
-    for (it = chunks.constBegin(); it != chunks.constEnd(); ++it)
+    QList<FormattedTextChunk>::iterator it;
+    bool isFirst = (addPadding ? true : false);
+    for (it = chunks.begin(); it != chunks.end(); ++it)
     {
-        bool isLast = (it + 1 == chunks.constEnd());
+        bool isLast = (addPadding ? (it + 1 == chunks.constEnd()) : false);
         QSize tmp = (*it).CalcSize(layoutSpacing);
         height = max(height, tmp.height());
         width += tmp.width();
-        (*it).CalcPadding(isFirst, isLast, leftPadding, rightPadding);
+        // We don't need to call CalcPadding if addPadding is false
+        if (addPadding)
+            (*it).CalcPadding(isFirst, isLast, leftPadding, rightPadding);
         if (it == chunks.constBegin())
             width += leftPadding;
         isFirst = false;
@@ -783,9 +1061,10 @@ FormattedTextSubtitle::FormattedTextSubtitle(void) :
 // Normal font height is designed to be 1/20 of safe area height, with
 // extra blank space between lines to make 17 lines within the safe
 // area.
-static const float LINE_SPACING = (20.0 / 17.0);
+// static const float LINE_SPACING = (20.0 / 17.0);
+static const float LINE_SPACING = 0.0;
 static const float PAD_WIDTH  = 0.5;
-static const float PAD_HEIGHT = 0.04;
+// static const float PAD_HEIGHT = 0.04;
 
 // Resolves any TBD x_indent and y_indent values in FormattedTextLine
 // objects.  Calculates m_bounds.  Prunes most leading and all
@@ -798,7 +1077,11 @@ void FormattedTextSubtitle::Layout(void)
     int anchor_height = 0;
     for (int i = 0; i < m_lines.size(); i++)
     {
-        QSize sz = m_lines[i].CalcSize(LINE_SPACING);
+        // We don't want padding added at this point.
+        // Padding applies to the background.
+        // We want to know where the txt should be drawn,
+        // not where the background shoould be drawn.
+        QSize sz = m_lines[i].CalcSize(LINE_SPACING, false);
         anchor_width = max(anchor_width, sz.width());
         anchor_height += sz.height();
     }
@@ -819,7 +1102,15 @@ void FormattedTextSubtitle::Layout(void)
     anchor_y = max(0, min(anchor_y, m_safeArea.height() - anchor_height));
     anchor_x = max(0, min(anchor_x, m_safeArea.width() - anchor_width));
 
-    m_bounds = QRect(anchor_x, anchor_y, anchor_width, anchor_height);
+    // m_bounds needs padding.
+    // Get it using the first chunk of the first line.
+    int left = 0;
+    int right = 0;
+    m_lines[0].chunks.first().CalcPadding(true, true, left, right);
+    m_bounds = QRect(anchor_x-left,
+                     anchor_y,
+                     anchor_width+left+right,
+                     anchor_height);
 
     // Fill in missing coordinates
     int y = anchor_y;
@@ -829,7 +1120,7 @@ void FormattedTextSubtitle::Layout(void)
             m_lines[i].x_indent = anchor_x;
         if (m_lines[i].y_indent < 0)
             m_lines[i].y_indent = y;
-        y += m_lines[i].CalcSize(LINE_SPACING).height();
+        y += m_lines[i].CalcSize(LINE_SPACING, false).height();
         // Prune leading all-whitespace chunks.
         while (!m_lines[i].chunks.isEmpty() &&
                m_lines[i].chunks.first().text.trimmed().isEmpty())
@@ -864,7 +1155,7 @@ void FormattedTextSubtitle::PreRender(void)
     {
         int x = m_lines[i].x_indent;
         int y = m_lines[i].y_indent;
-        int height = m_lines[i].CalcSize().height();
+        int height = m_lines[i].CalcSize(LINE_SPACING, false).height();
         QList<FormattedTextChunk>::iterator chunk;
         bool isFirst = true;
         for (chunk = m_lines[i].chunks.begin();
@@ -893,13 +1184,26 @@ void FormattedTextSubtitle::Draw(void)
         {
             MythFontProperties *mythfont =
                 m_subScreen->GetFont((*chunk).m_format);
-            if (!mythfont)
-                continue;
+            // Never returns NULL
+            // if (!mythfont)
+            //     continue;
             // Note: NULL is passed as the parent argument to the
             // MythUI constructors so that we can control the drawing
             // order of the children.  In particular, background
             // shapes should be added/drawn first, and text drawn on
             // top.
+            LOG(VB_VBI, LOG_DEBUG,
+                QString("i=%1 rect=%2x%3@%4,%5 bgrect=%6x%7@%8,%9 text=%10")
+                .arg(i)
+                .arg(chunk->textRect.width())
+                .arg(chunk->textRect.height())
+                .arg(chunk->textRect.x())
+                .arg(chunk->textRect.y())
+                .arg(chunk->bgShapeRect.width())
+                .arg(chunk->bgShapeRect.height())
+                .arg(chunk->bgShapeRect.x())
+                .arg(chunk->bgShapeRect.y())
+                .arg(chunk->text));
             if ((*chunk).textRect.width() > 0) {
                 SubSimpleText *text =
                     new SubSimpleText((*chunk).text, *mythfont,
@@ -994,9 +1298,6 @@ void FormattedTextSubtitleSRT::Init(const QStringList &subs)
     // <font color="#xxyyzz"> - change font color
     // </font> - reset font color to white
 
-    int pixelSize = m_safeArea.height() / 20;
-    if (m_subScreen)
-        m_subScreen->SetFontSize(pixelSize);
     m_xAnchorPoint = 1; // center
     m_yAnchorPoint = 2; // bottom
     m_xAnchor = m_safeArea.width() / 2;
@@ -1197,7 +1498,7 @@ void FormattedTextSubtitle608::Layout(void)
         int y = m_lines[i].y_indent;
         if (i == 0)
             firstY = prevY = y;
-        int height = m_lines[i].CalcSize().height();
+        int height = m_lines[i].CalcSize(LINE_SPACING, false).height();
         heights[i] = height;
         spaceBefore[i] = y - prevY;
         totalSpace += (y - prevY);
@@ -1218,6 +1519,9 @@ void FormattedTextSubtitle608::Layout(void)
             m_lines[i].y_indent = prevY + spaceBefore[i] * shrink;
             prevY = m_lines[i].y_indent + heights[i];
         }
+        LOG(VB_VBI, LOG_DEBUG,
+            QString("Shrink overage=%1 totalSpace=%2 shrink=%3 firstY=%4 prevY=%5")
+            .arg(overage).arg(totalSpace).arg(shrink).arg(firstY).arg(prevY));
     }
 
     // Shift Y coordinates back up into the safe area.
@@ -1239,24 +1543,50 @@ void FormattedTextSubtitle608::Init(const vector<CC608Text*> &buffers)
     if (buffers.empty())
         return;
     vector<CC608Text*>::const_iterator i = buffers.begin();
-    int xscale = 36;
-    int yscale = 17;
-    int pixelSize = m_safeArea.height() / (yscale * LINE_SPACING);
+
+    int xscale = 32;    // 608 max columns
+    int yscale = 15;    // 608 max rows
+
+    int lineHeight = m_safeArea.height() / yscale;
     int fontwidth = 0;
     int xmid = 0;
-    int zoom = 100;
+    // int zoom = 100;
     if (m_subScreen)
     {
-        zoom = m_subScreen->GetZoom();
-        m_subScreen->SetFontSize(pixelSize);
+        // zoom = m_subScreen->GetZoom();
         CC708CharacterAttribute def_attr(false, false, false, clr[0]);
-        QFont *font = m_subScreen->GetFont(def_attr)->GetFace();
+        MythFontProperties* mythfont = m_subScreen->GetFont(def_attr);
+        QFont *font = mythfont->GetFace();
         QFontMetrics fm(*font);
         fontwidth = fm.averageCharWidth();
         xmid = m_safeArea.width() / 2;
+
+        // Font metrics for various fonts are inconsistent in how
+        // they provide a realistic line height value.
+        // The max of what they call height and lineSpacing
+        // provides a resonable value for most fonts.
+        lineHeight = max(fm.height(), fm.lineSpacing());
+
+        // Increase by shadow offset and/or outline size
+        QPoint offset;
+        QColor color;
+        int alpha;
+        mythfont->GetShadow(offset, color, alpha);
+
+        int size;
+        mythfont->GetOutline(color, size, alpha);
+
+        lineHeight += max(abs(offset.y()), size);
+
         // Disable centering for zoom factor >= 100%
-        if (zoom >= 100)
-            xscale = m_safeArea.width() / fontwidth;
+        // Why?? If disabled, 608 captions are shifted to left unless
+        // the user sets the zoom to 99% or less.
+        // The Layout method should shift left-right and up-down
+        // as needed for zoom factor.
+        // If zoom factor is too large, the user can reduce it.
+        // If they don't we'll clip what doesn't fit.
+        //if (zoom >= 100)
+        //    xscale = m_safeArea.width() / fontwidth;
     }
 
     for (; i != buffers.end(); ++i)
@@ -1267,6 +1597,7 @@ void FormattedTextSubtitle608::Init(const vector<CC608Text*> &buffers)
         const bool isBold = false;
         QString text(cc->text);
 
+        // Note: cc-x (and orig_x) is column # ranging from 0 through 31,
         int orig_x = cc->x;
         // position as if we use a fixed size font
         // - font size already has zoom factor applied
@@ -1279,16 +1610,16 @@ void FormattedTextSubtitle608::Init(const vector<CC608Text*> &buffers)
             // fallback
             x = (orig_x + 3) * m_safeArea.width() / xscale;
 
+        // Note: cc-y (and orig_y) is row # ranging from 1 through 15,
+        // we need zero based rows
         int orig_y = cc->y;
         int y;
-        if (orig_y < yscale / 2)
+        if (orig_y <= yscale / 2)
             // top half -- anchor up
-            y = (orig_y * m_safeArea.height() * zoom / (yscale * 100));
+            y = (orig_y-1) * lineHeight;
         else
             // bottom half -- anchor down
-            y = m_safeArea.height() -
-                ((yscale - orig_y - 0.5) * m_safeArea.height() * zoom /
-                 (yscale * 100));
+            y = m_safeArea.height() - ((yscale - (orig_y-1)) * lineHeight);
 
         FormattedTextLine line(x, y, orig_x, orig_y);
         while (!text.isNull())
@@ -1334,21 +1665,36 @@ void FormattedTextSubtitle708::Init(const CC708Window &win,
                 "relative %5")
             .arg(m_num).arg(win.anchor_point).arg(win.anchor_horizontal)
             .arg(win.anchor_vertical).arg(win.relative_pos));
-    int pixelSize = m_safeArea.height() / 20;
-    if (m_subScreen)
-        m_subScreen->SetFontSize(pixelSize);
 
     float xrange  = win.relative_pos ? 100.0f :
                     (aspect > 1.4f) ? 210.0f : 160.0f;
     float yrange  = win.relative_pos ? 100.0f : 75.0f;
-    float xmult   = (float)m_safeArea.width() / xrange;
+
+    // Center the window addressable area based on the first string's font.
+    // Assumption: Most caption providers do not change font within a window
+    MythFontProperties* mythFont = m_subScreen->GetFont(list[0]->attr);
+    QFont* font = mythFont->GetFace();
+    QFontMetrics fm(*font);
+    int cols = (aspect > 1.4f) ? 42 : 32;
+    int centerWidth = min(m_safeArea.width(), cols * fm.averageCharWidth());
+    int xoffset = (m_safeArea.width() - centerWidth) / 2;
+
+    float xmult   = (float)centerWidth / xrange;
     float ymult   = (float)m_safeArea.height() / yrange;
     uint anchor_x = (uint)(xmult * (float)win.anchor_horizontal);
     uint anchor_y = (uint)(ymult * (float)win.anchor_vertical);
     m_xAnchorPoint = win.anchor_point % 3;
     m_yAnchorPoint = win.anchor_point / 3;
-    m_xAnchor = anchor_x;
+
+    // Should work equally for both left & right anchor points.
+    m_xAnchor = (m_xAnchorPoint == 1) ? anchor_x : xoffset + anchor_x;
     m_yAnchor = anchor_y;
+
+    LOG(VB_VBI, LOG_INFO,
+        QString("708 centerWidth=%1 xoffset=%2 anchorPoints=%3,%4 anchors=%5,%6")
+        .arg(centerWidth).arg(xoffset)
+        .arg(m_xAnchorPoint).arg(m_yAnchorPoint)
+        .arg(m_xAnchor).arg(m_yAnchor));
 
     for (uint i = 0; i < list.size(); i++)
     {
@@ -1369,12 +1715,11 @@ SubtitleScreen::SubtitleScreen(MythPlayer *player, const char * name,
     m_player(player),  m_subreader(NULL),   m_608reader(NULL),
     m_708reader(NULL), m_safeArea(QRect()),
     m_removeHTML(QRegExp("</?.+>")),        m_subtitleType(kDisplayNone),
-    m_fontSize(0),
     m_textFontZoom(100), m_textFontZoomPrev(100),
     m_textFontDelayMs(0), m_textFontDelayMsPrev(0),
     m_refreshModified(false), m_refreshDeleted(false),
     m_fontStretch(fontStretch),
-    m_format(new SubtitleFormat)
+    m_format(new SubtitleFormat(this, player, fontStretch))
 {
     m_removeHTML.setMinimal(true);
 
@@ -1588,6 +1933,8 @@ void SubtitleScreen::Clear708Cache(uint64_t mask)
 // the subtitle screen.
 void SubtitleScreen::SetElementAdded(void)
 {
+    if (!m_refreshModified)
+        SetRedraw();
     m_refreshModified = true;
 }
 
@@ -1620,15 +1967,18 @@ static QSize CalcShadowOffsetPadding(MythFontProperties *mythfont)
     if (mythfont->hasOutline())
     {
         mythfont->GetOutline(color, outlineSize, alpha);
-        MythPoint outline(outlineSize, outlineSize);
-        outline.NormPoint();
-        outlineSize = outline.x();
+        // Outline has already been scaled by SubtitleFormat::Load
+        // MythPoint outline(outlineSize, outlineSize);
+        // outline.NormPoint();
+        // outlineSize = outline.x();
     }
     if (mythfont->hasShadow())
     {
         MythPoint shadowOffset;
         mythfont->GetShadow(shadowOffset, color, alpha);
-        shadowOffset.NormPoint();
+        // Shadow offset has already been scaled from theme to screen
+        // Why do it again?
+        // shadowOffset.NormPoint();
         shadowWidth = abs(shadowOffset.x());
         shadowHeight = abs(shadowOffset.y());
         // Shadow and outline overlap, so don't just add them.
@@ -1640,13 +1990,21 @@ static QSize CalcShadowOffsetPadding(MythFontProperties *mythfont)
 
 QSize SubtitleScreen::CalcTextSize(const QString &text,
                                    const CC708CharacterAttribute &format,
-                                   float layoutSpacing) const
+                                   float layoutSpacing,
+                                   MythFontProperties* mythfont) const
 {
-    MythFontProperties *mythfont = GetFont(format);
+    if (!mythfont)
+        mythfont = GetFont(format);
     QFont *font = mythfont->GetFace();
     QFontMetrics fm(*font);
     int width = fm.width(text);
-    int height = fm.height() * (1 + PAD_HEIGHT);
+
+    // Font metrics for various fonts are inconsistent in how
+    // they provide a realistic line height value.
+    // The max of what they call height and lineSpacing
+    // provides a resonable value for most fonts.
+    int height = max(fm.height(), fm.lineSpacing());
+
     if (layoutSpacing > 0 && !text.trimmed().isEmpty())
         height = max(height, (int)(font->pixelSize() * layoutSpacing));
     height += CalcShadowOffsetPadding(mythfont).height();
@@ -1658,9 +2016,11 @@ QSize SubtitleScreen::CalcTextSize(const QString &text,
 // right needs to add the shadow and offset padding.
 void SubtitleScreen::CalcPadding(const CC708CharacterAttribute &format,
                                  bool isFirst, bool isLast,
-                                 int &left, int &right) const
+                                 int &left, int &right,
+                                 MythFontProperties* mythfont) const
 {
-    MythFontProperties *mythfont = GetFont(format);
+    if (!mythfont)
+        mythfont = GetFont(format);
     QFont *font = mythfont->GetFace();
     QFontMetrics fm(*font);
     int basicPadding = fm.maxWidth() * PAD_WIDTH;
@@ -1672,18 +2032,19 @@ void SubtitleScreen::CalcPadding(const CC708CharacterAttribute &format,
 MythFontProperties *
 SubtitleScreen::GetFont(const CC708CharacterAttribute &attr) const
 {
-    return m_format->GetFont(m_family, attr, m_fontSize,
-                             m_textFontZoom, m_fontStretch);
+    return m_format->GetFont(m_family, attr, m_textFontZoom);
+}
+
+QRect
+SubtitleScreen::GetSafeArea()
+{
+    return m_player->GetVideoOutput()->GetSafeRect();
 }
 
 QString SubtitleScreen::GetTeletextFontName(void)
 {
     SubtitleFormat format;
-    CC708CharacterAttribute attr(false, false, false, Qt::white);
-    MythFontProperties *mythfont =
-        format.GetFont(kSubFamilyTeletext, attr,
-                       /*pixelsize*/20, /*zoom*/100, /*stretch*/100);
-    return mythfont->face().family();
+    return format.GetTeletextFontName();
 }
 
 int SubtitleScreen::GetTeletextBackgroundAlpha(void)
@@ -1804,10 +2165,25 @@ void SubtitleScreen::OptimiseDisplayedArea(void)
         return;
 
     QRect bounding  = visible.boundingRect();
+    LOG(VB_VBI, LOG_DEBUG,
+        QString("Visible bounds=%1x%2@%3,%4")
+        .arg(bounding.width()).arg(bounding.height())
+        .arg(bounding.x()).arg(bounding.y()));
+
     bounding = bounding.translated(m_safeArea.topLeft());
+    LOG(VB_VBI, LOG_DEBUG,
+        QString("Translated bounds=%1x%2@%3,%4")
+        .arg(bounding.width()).arg(bounding.height())
+        .arg(bounding.x()).arg(bounding.y()));
+
     bounding = m_safeArea.intersected(bounding);
     int left = m_safeArea.left() - bounding.left();
     int top  = m_safeArea.top()  - bounding.top();
+    LOG(VB_VBI, LOG_DEBUG,
+        QString("Intersected bounds=%1x%2@%3,%4 left=%5 top=%6")
+        .arg(bounding.width()).arg(bounding.height())
+        .arg(bounding.x()).arg(bounding.y())
+        .arg(left).arg(top));
     SetArea(MythRect(bounding));
 
     i.toFront();
