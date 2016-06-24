@@ -179,7 +179,7 @@
         <area>0,0,300,250</area>
         <layout>vertical</layout>
         <spacing>4</spacing>
-        <buttonarea>0,0,100%,97%</buttonarea>
+        <buttonarea>0,0,100%,95%</buttonarea>
         <statetype name="buttonitem">
             <area>0,0,100%,30</area>
             <state name="active">
@@ -196,6 +196,15 @@
                     <cutdown>yes</cutdown>
                     <align>left,vcenter</align>
                 </textarea>
+		<statetype name="watchedstate">
+		    <position>100%-20,7</position>
+		    <state name="yes">
+			<imagetype name="watchedimage">
+			    <filename>small_watched.png</filename>
+			    <preserveaspect>true</preserveaspect>
+			</imagetype>
+		    </state>
+		</statetype>
                 <statetype name="buttoncheck">
                     <position>91%,4</position>
                     <state type="off">
@@ -238,7 +247,7 @@
             </state>
         </statetype>
         <statetype name="upscrollarrow">
-            <position>10,96%</position>
+            <position>10,95%</position>
             <state type="off">
                 <imagetype name="upon">
                     <filename>lb-uparrow-reg.png</filename>
@@ -251,7 +260,7 @@
             </state>
         </statetype>
         <statetype name="downscrollarrow">
-            <position>40,96%</position>
+            <position>40,95%</position>
             <state type="off">
                 <imagetype name="dnon">
                     <filename>lb-dnarrow-reg.png</filename>
