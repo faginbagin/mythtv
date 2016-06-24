@@ -291,6 +291,7 @@
     </window>
 
     <window name="MythPopupBox">
+<!--
         <fontdef name="basesmall" face="Droid Sans">
             <pixelsize>22</pixelsize>
             <color>#EEEEEE</color>
@@ -299,6 +300,7 @@
         <fontdef name="basesmall_normal_inactive" from="basesmall">
             <color>#666666</color>
         </fontdef>
+-->
         <area>-1,-1,500,500</area>
         <imagetype name="backimg">
             <area>0,0,500,500</area>
@@ -482,11 +484,13 @@
     </window>
 
     <window name="ChannelEditor">
+<!--
         <fontdef name="basesmall" face="Droid Sans">
             <pixelsize>22</pixelsize>
             <color>#EEEEEE</color>
             <weight>bold</weight>
         </fontdef>
+-->
         <area>100,-1,500,500</area>
         <imagetype name="backimg">
             <area>0,0,500,500</area>
