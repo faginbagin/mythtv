@@ -732,6 +732,7 @@
             <buttonlist name="listtemplate" from="basebuttonlist">
                 <triggerevent context="Global" action="ESCAPE">LEFT</triggerevent>
                 <triggerevent context="Global" action="INFO">RIGHT</triggerevent>
+                <wrapstyle>selection</wrapstyle>
             </buttonlist>
         </buttontree>
 
@@ -787,6 +788,17 @@
             <area>1000,400,225,250</area>
             <preserveaspect>yes</preserveaspect>
         </imagetype>
+
+        <statetype name="watchedstate">
+            <position>947,428</position>
+            <state name="yes">
+                <imagetype name="watchedimage">
+                    <area>0,0,30,30</area>
+                    <filename>watched.png</filename>
+                    <preserveaspect>true</preserveaspect>
+                </imagetype>
+            </state>
+        </statetype>
 
         <textarea name="level_label" from="basetextarea">
             <area>960,670,210,30</area>
