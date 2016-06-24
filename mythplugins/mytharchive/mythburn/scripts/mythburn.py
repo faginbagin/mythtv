@@ -4742,8 +4742,12 @@ def doProcessFile(file, folder, count):
             write("Re-encoding audio and video")
 
             # Run from local file?
-            if file.hasAttribute("localfilename"):
-                mediafile = file.attributes["localfilename"].value
+            # NO, already set to point to localfile
+            # or newfile.mpg if we've run mythtranscode
+            #if file.hasAttribute("localfilename"):
+            #    write("Should we change mediafile from %s to %s?" % \
+            #        (mediafile, file.attributes["localfilename"].value))
+            #    mediafile = file.attributes["localfilename"].value
 
             # what encoding profile should we use
             if file.hasAttribute("encodingprofile"):
