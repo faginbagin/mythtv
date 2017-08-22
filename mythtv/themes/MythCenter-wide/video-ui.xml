@@ -78,7 +78,8 @@
 
         <textarea name="dirlbl" from="basetextarea">
             <area>369,490,165,35</area>
-            <value>Directed by</value>
+            <value>Directed by:</value>
+            <align>right</align>
         </textarea>
 
         <textarea name="director" from="basetextarea">
@@ -749,27 +750,29 @@
              <area>50,380,400,30</area>
              <font>basemedium</font>
          </textarea>
--->
+
          <textarea name="subtitle" from="basetextarea">
              <area>50,420,800,30</area>
              <font>basemedium</font>
          </textarea>
-
-          <textarea name="director" from="basetextarea">
-             <area>50,467,450,30</area>
-          </textarea>
-  
+-->
+        <textarea name="director" from="basetextarea">
+            <area>50,425,450,30</area>
+            <template>Directed by %1</template>
+        </textarea>
+<!--
           <textarea name="year" from="basetextarea">
              <area>500,467,80,30</area>
               <align>right</align>
           </textarea>
-  
-          <textarea name="description" from="basetextarea">
-             <area>40,500,800,150</area>
-              <align>left,top</align>
-              <multiline>yes</multiline>
-              <cutdown>yes</cutdown>
-          </textarea>
+-->
+        <textarea name="description" from="basetextarea">
+            <area>40,460,980,170</area>
+            <align>left,top</align>
+            <multiline>yes</multiline>
+            <cutdown>yes</cutdown>
+            <template>%"|SUBTITLE|" %%(|YEAR|) %%DESCRIPTION%</template>
+        </textarea>
 <!--  
           <textarea name="cast" from="basetextarea">
              <area>720,495,480,140</area>
@@ -778,6 +781,13 @@
               <cutdown>no</cutdown>
           </textarea>
 -->  
+        <textarea name="filename" from="basetextarea">
+            <area>40,630,980,30</area>
+            <cutdown>left</cutdown>
+            <font>basesmaller</font>
+            <align>vcenter</align>
+        </textarea>
+
           <textarea name="position" from="basetextarea">
              <area>266,655,266,40</area>
               <font>basemedium</font>
@@ -788,17 +798,6 @@
             <area>1000,400,225,250</area>
             <preserveaspect>yes</preserveaspect>
         </imagetype>
-
-        <statetype name="watchedstate">
-            <position>947,428</position>
-            <state name="yes">
-                <imagetype name="watchedimage">
-                    <area>0,0,30,30</area>
-                    <filename>watched.png</filename>
-                    <preserveaspect>true</preserveaspect>
-                </imagetype>
-            </state>
-        </statetype>
 
         <textarea name="level_label" from="basetextarea">
             <area>920,670,250,30</area>
