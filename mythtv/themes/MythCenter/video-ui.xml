@@ -735,19 +735,23 @@
             <area>40,50,720,258</area>
             <numlists>3</numlists>
             <spacing>10</spacing>
-            <buttonlist name="listtemplate" from="basebuttonlist" />
+            <buttonlist name="listtemplate" from="basebuttonlist">
+                <triggerevent context="Global" action="ESCAPE">LEFT</triggerevent>
+                <triggerevent context="Global" action="INFO">RIGHT</triggerevent>
+                <wrapstyle>selection</wrapstyle>
+            </buttonlist>
         </buttontree>
 
         <textarea name="title" from="basetextarea">
             <area>40,310,580,40</area>
             <font>baselarge</font>
         </textarea>
-
+<!--
         <textarea name="s##e##" from="basetextarea">
             <area>540,340,80,30</area>
             <align>right</align>
         </textarea>
-
+-->
         <textarea name="director" from="basetextarea">
             <area>40,340,450,30</area>
             <template>Directed by %1</template>
