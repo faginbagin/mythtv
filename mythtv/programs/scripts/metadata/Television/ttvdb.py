@@ -1970,6 +1970,14 @@ def main():
         parser.error("! No series or series season episode supplied")
         return 1
 
+    # Force German for Tatort and/or 83214, its series id
+    # or for Ein Fall für Zwei and/or 89901, its series id
+    if series_season_ep[0] == u"Tatort" or series_season_ep[0] == u"83214" \
+        or series_season_ep[0] == u"Ein Fall für zwei" \
+        or series_season_ep[0] == u"89901":
+            opts.language = "de"
+            opts.country = "DE"
+
     # Default output format of season and episode numbers
     season_and_episode_num='S%02dE%02d' # Format output example "S04E12"
 
