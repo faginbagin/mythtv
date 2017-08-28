@@ -1071,7 +1071,9 @@ if IS_PY2:
 else:
     cache_dir=os.path.join(confdir, "cache/tvdb_api3/")
 if not os.path.exists(cache_dir):
-    os.mkdir(cache_dir)
+    # Use os.makedirs in case user doesn't already have a cache directory
+    # Such is likely the case in 0.27
+    os.makedirs(cache_dir)
 
 def _can_int(x):
     """Takes a string, checks if it is numeric.
