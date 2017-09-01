@@ -2180,32 +2180,36 @@ def main():
 
     # Dump information accessible for a Series and ONLY first season of episoded data
     if opts.debug == True:
-        print("#"*20)
-        print("# Starting Raw keys call")
-        print("Lvl #1:")    # Seasons for series
-        x = t[series_season_ep[0]].keys()
-        print(t[series_season_ep[0]].keys())
-        print("#"*20)
-        print("Lvl #2:")    # Episodes for each season
-        for y in x:
-            print(t[series_season_ep[0]][y].keys())
-        print("#"*20)
-        print("Lvl #3:")    # Keys for each episode within the 1st season
-        z = t[series_season_ep[0]][1].keys()
-        for aa in z:
-            print(t[series_season_ep[0]][1][aa].keys())
-        print("#"*20)
-        print("Lvl #4:")    # Available data for each episode in 1st season
-        for aa in z:
-            codes = t[series_season_ep[0]][1][aa].keys()
-            print("\n\nStart:")
-            for c in codes:
-                print("="*50)
-                print('Key Name=('+c+'):')
-                print(t[series_season_ep[0]][1][aa][c])
-                print("="*50)
-        print("#"*20)
-        sys.exit (True)
+        # Don't let an exception thrown as a result of printing
+        # debug data cause us to terminate.
+        # If an exception is thrown, just print the stack trace and continue.
+        import traceback
+        try:
+            print("#"*20)
+            print("# Starting Raw keys call")
+            print("Lvl #1:")    # Seasons for series
+            x = t[series_season_ep[0]].keys()
+            print(t[series_season_ep[0]].keys())
+            print("#"*20)
+            print("Lvl #2:")    # Episodes for each season
+            for y in x:
+                print(t[series_season_ep[0]][y].keys())
+            z = t[series_season_ep[0]][1].keys()
+            for aa in z:
+                print(t[series_season_ep[0]][1][aa].keys())
+            print("#"*20)
+            print("Lvl #4:")    # Available data for each episode in 1st season
+            for aa in z:
+                codes = t[series_season_ep[0]][1][aa].keys()
+                print("\n\nStart:")
+                for c in codes:
+                    print("="*50)
+                    print('Key Name=('+c+'):')
+                    print(t[series_season_ep[0]][1][aa][c])
+                    print("="*50)
+            print("#"*20)
+        except Exception as e:
+            traceback.print_exc()
 
     if opts.numbers == True: # Fetch and output season and episode numbers
         global xmlFlag
