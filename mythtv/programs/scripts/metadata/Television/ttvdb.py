@@ -608,9 +608,9 @@ Banner:http://thetvdb.com/banners/graphical/281053-g2.jpg,http://thetvdb.com/ban
   <item>
     <title>NOVA</title>
     <subtitle>Eclipse Over America</subtitle>
-    <description>On August 21, 2017, millions of Americans will witness the first total solar eclipse to cross the continental United States in 99 years. As in all total solar eclipses, the moon will block the sun, revealing its ethereal outer atmosphere—its corona—in a wondrous celestial spectacle. While hordes of citizens prepare to flock to the eclipse’s path of totality,</description>
-    <season>44</season>
-    <episode>18</episode>
+    <description>On August 21, 2017, millions of Americans witnessed the first total solar eclipse to cross the continental United States in 99 years. As in all total solar eclipses, the moon blocked the sun and revealed its ethereal outer atmosphere – its corona – in a wondrous celestial spectacle. While hordes of citizens flocked to the eclipse’s path of totality, scientists, too, staked out spots for a very different reason: to investigate the secrets of the sun’s elusive atmosphere. During the eclipse’s precious seconds of darkness, they gathered new clues on how our sun works, how it can produce deadly solar storms, and why its atmosphere is so hot. NOVA investigates the storied history of solar eclipse science, and joins both seasoned and citizen-scientists alike as they don their eclipse glasses, tune their telescopes, and behold the Eclipse Over America.</description>
+    <season>0</season>
+    <episode>19</episode>
     <certifications>
       <certification locale="us" name="TV-PG"/>
     </certifications>
@@ -628,10 +628,13 @@ Banner:http://thetvdb.com/banners/graphical/281053-g2.jpg,http://thetvdb.com/ban
     <language>en</language>
     <year>2017</year>
     <releasedate>2017-08-21</releasedate>
+    <people>
+      <person job="Guest Star" name="Craig Sechler"/>
+      <person job="Director" name="Martin Gorst"/>
+    </people>
     <images>
-      <image type="screenshot" url="http://thetvdb.com/banners/episodes/76119/6240639.jpg" thumb="http://thetvdb.com/banners/_cache/episodes/76119/6240639.jpg"/>
-      <image type="coverart" url="http://www.thetvdb.com/banners/seasons/76119-44.jpg" thumb="http://www.thetvdb.com/banners/_cache/seasons/76119-44.jpg"/>
-      <image type="coverart" url="http://www.thetvdb.com/banners/seasons/76119-44-2.jpg" thumb="http://www.thetvdb.com/banners/_cache/seasons/76119-44-2.jpg"/>
+      <image type="screenshot" url="http://thetvdb.com/banners/episodes/76119/6286436.jpg" thumb="http://thetvdb.com/banners/_cache/episodes/76119/6286436.jpg"/>
+      <image type="coverart" url="http://www.thetvdb.com/banners/seasons/76119-0-2.jpg" thumb="http://www.thetvdb.com/banners/_cache/seasons/76119-0-2.jpg"/>
       <image type="fanart" url="http://www.thetvdb.com/banners/fanart/original/76119-1.jpg" thumb="http://www.thetvdb.com/banners/_cache/fanart/original/76119-1.jpg" width="1920" height="1080"/>
       <image type="fanart" url="http://www.thetvdb.com/banners/fanart/original/76119-2.jpg" thumb="http://www.thetvdb.com/banners/_cache/fanart/original/76119-2.jpg" width="1920" height="1080"/>
       <image type="fanart" url="http://www.thetvdb.com/banners/fanart/original/76119-3.jpg" thumb="http://www.thetvdb.com/banners/_cache/fanart/original/76119-3.jpg" width="1280" height="720"/>
