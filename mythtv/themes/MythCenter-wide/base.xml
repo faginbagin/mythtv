@@ -196,15 +196,15 @@
                     <cutdown>yes</cutdown>
                     <align>left,vcenter</align>
                 </textarea>
-		<statetype name="watchedstate">
-		    <position>100%-20,7</position>
-		    <state name="yes">
-			<imagetype name="watchedimage">
-			    <filename>small_watched.png</filename>
-			    <preserveaspect>true</preserveaspect>
-			</imagetype>
-		    </state>
-		</statetype>
+                <statetype name="watchedstate">
+                    <position>100%-20,7</position>
+                    <state name="yes">
+                    <imagetype name="watchedimage">
+                        <filename>small_watched.png</filename>
+                        <preserveaspect>true</preserveaspect>
+                    </imagetype>
+                    </state>
+                </statetype>
                 <statetype name="buttoncheck">
                     <position>91%,4</position>
                     <state type="off">
