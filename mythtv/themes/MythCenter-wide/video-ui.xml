@@ -712,11 +712,6 @@
 
     <window name="tree">
 
-        <imagetype name="fanart">
-            <area>0,0,100%,100%</area>
-            <preserveaspect>no</preserveaspect>
-        </imagetype>
-
         <shape name="tree_background" from="basebackground">
             <area>15,15,1250,350</area>
         </shape>
