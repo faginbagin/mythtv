@@ -138,10 +138,10 @@
             <triggerevent context="Global" action="ESCAPE">LEFT</triggerevent>
             <statetype name="buttonitem">
                 <state name="active">
-                    <area>0,0,340,50</area>
+                    <area>0,0,340,49</area>
                     <imagetype name="background" />
                     <textarea name="buttontext">
-                        <area>14,0,326,50</area>
+                        <area>14,0,326,49</area>
                         <font>menufont</font>
                         <align>left,vcenter</align>
                         <cutdown>yes</cutdown>
@@ -149,7 +149,7 @@
                 </state>
                 <state name="selectedactive" from="active">
                     <imagetype name="background">
-                        <area>0,0,340,50</area>
+                        <area>0,0,340,49</area>
                         <filename>ui/button_on.png</filename>
                     </imagetype>
                 </state>
