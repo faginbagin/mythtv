@@ -18,10 +18,10 @@
         </fontdef>
 
         <clock name="clock">
-            <area>487,33,300,33</area>
+            <area>280,33,500,33</area>
             <font>clock</font>
             <template>%DATE%, %TIME%</template>
-            <align>center</align>
+            <align>right</align>
         </clock>
 
         <statetype name="titles">
