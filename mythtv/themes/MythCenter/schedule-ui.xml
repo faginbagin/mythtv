@@ -95,7 +95,7 @@
         </buttonlist>
 
         <buttonlist name="channellist">
-            <area>16,197,135,386</area>
+            <area>16,200,135,386</area>
             <buttonarea>0,0,100%,100%</buttonarea>
             <triggerevent context="Global" action="ESCAPE">LEFT</triggerevent>
             <statetype name="buttonitem">
@@ -265,7 +265,7 @@
         </buttonlist>
 
         <buttonlist name="channellist">
-            <area>16,255,135,325</area>
+            <area>16,255,135,331</area>
             <layout>vertical</layout>
             <spacing>0</spacing>
             <buttonarea>0,0,100%,100%</buttonarea>
@@ -1239,7 +1239,7 @@
         </shape>
 
         <shape name="select_background">
-            <area>28,414,744,32</area>
+            <area>28,409,744,32</area>
             <type>roundbox</type>
             <fill color="#00FF00" alpha="48" />
             <line color="#FFFFFF" alpha="128" width="2"/>
@@ -1254,7 +1254,7 @@
             <statetype name="buttonitem">
                 <state name="active">
                     <textarea name="buttontext" from="basetextarea">
-                        <area>0,0,50,32</area>
+                        <area>0,0,50,31</area>
                         <align>allcenter</align>
                         <font>basesmall_normal</font>
                     </textarea>
@@ -1298,10 +1298,10 @@
         <buttonlist name="shows" from="alphabet">
             <area>98,284,380,288</area>
             <statetype name="buttonitem">
-                <area>0,0,380,32</area>
+                <area>0,0,380,31</area>
                 <state name="active">
                     <textarea name="buttontext">
-                        <area>5,0,365,32</area>
+                        <area>5,0,365,31</area>
                         <font>basesmall_normal</font>
                         <cutdown>yes</cutdown>
                         <align>left,vcenter</align>
@@ -1319,10 +1319,10 @@
         <buttonlist name="times" from="alphabet">
             <area>496,284,276,288</area>
             <statetype name="buttonitem">
-                <area>0,0,276,32</area>
+                <area>0,0,276,31</area>
                 <state name="active">
                     <textarea name="buttontext">
-                        <area>0,0,276,32</area>
+                        <area>0,0,276,31</area>
                         <font>basesmall_normal</font>
                         <cutdown>no</cutdown>
                         <align>left,vcenter</align>
