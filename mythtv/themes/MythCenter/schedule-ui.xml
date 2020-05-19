@@ -72,7 +72,7 @@
 
         <buttonlist name="timelist">
             <spacing>0</spacing>
-            <area>151,170,632,30</area>
+            <area>151,170,636,30</area>
             <layout>horizontal</layout>
             <buttonarea>0,0,100%,100%</buttonarea>
             <triggerevent context="Global" action="ESCAPE">LEFT</triggerevent>
@@ -242,7 +242,7 @@
 
         <buttonlist name="timelist">
             <spacing>0</spacing>
-            <area>151,225,632,30</area>
+            <area>151,225,636,30</area>
             <layout>horizontal</layout>
             <buttonarea>0,0,100%,100%</buttonarea>
             <triggerevent context="Global" action="ESCAPE">LEFT</triggerevent>
