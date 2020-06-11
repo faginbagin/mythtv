@@ -205,12 +205,16 @@ MetadataLookup* MetadataDownload::findBestMatch(MetadataLookupList list,
     QStringList titles;
     MetadataLookup *ret = NULL;
 
+    LOG(VB_GENERAL, LOG_INFO, QString("originaltitle='%1'")
+            .arg(originaltitle));
     // Build a list of all the titles
     int exactMatches = 0;
     for (MetadataLookupList::const_iterator i = list.begin();
             i != list.end(); ++i)
     {
         QString title = (*i)->GetBaseTitle();
+        LOG(VB_GENERAL, LOG_INFO, QString("title='%1'")
+                .arg(title));
         if (title == originaltitle)
         {
             ret = (*i);

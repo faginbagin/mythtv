@@ -29,6 +29,7 @@ MetadataLookup::MetadataLookup(void) :
     m_host(),
     m_filename(),
     m_title(),
+    m_base_title(),
     m_network(),
     m_status(),
     m_categories(),
@@ -164,7 +165,6 @@ MetadataLookup::MetadataLookup(
     m_dvdorder(preferdvdorder),
     m_host(host),
     m_filename(filename),
-    m_title(title),
     m_network(network),
     m_status(status),
     m_categories(categories),
@@ -219,6 +219,7 @@ MetadataLookup::MetadataLookup(
     m_artwork(artwork),
     m_downloads(downloads)
 {
+    SetTitle(title);
 }
 
 // ProgramInfo-style constructor
@@ -275,7 +276,6 @@ MetadataLookup::MetadataLookup(
     m_dvdorder(preferdvdorder),
     m_host(host),
     m_filename(filename),
-    m_title(title),
     m_categories(categories),
     m_userrating(userrating),
     m_ratingcount(0),
@@ -308,6 +308,7 @@ MetadataLookup::MetadataLookup(
     m_runtimesecs(runtimesecs),
     m_iscollection(false)
 {
+    SetTitle(title);
     m_tracknum = 0;
     m_popularity = 0;
     m_budget = 0;
@@ -358,7 +359,6 @@ MetadataLookup::MetadataLookup(
     m_dvdorder(preferdvdorder),
     m_host(host),
     m_filename(filename),
-    m_title(title),
     m_categories(categories),
     m_userrating(userrating),
     m_ratingcount(0),
@@ -388,6 +388,7 @@ MetadataLookup::MetadataLookup(
     m_artwork(artwork),
     m_downloads(downloads)
 {
+    SetTitle(title);
 }
 
 MetadataLookup::~MetadataLookup()
