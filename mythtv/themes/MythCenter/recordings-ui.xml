@@ -136,7 +136,7 @@
 
         <buttonlist name="groups" from="basebuttonlist2">
             <area>15,85,220,240</area>
-            <buttonarea>0,0,220,210</buttonarea>
+            <buttonarea>0,0,220,220</buttonarea>
             <spacing>0</spacing>
             <wrapstyle>selection</wrapstyle>
             <searchposition>-1,390</searchposition>
@@ -186,7 +186,7 @@
 
         <buttonlist name="recordings" from="basebuttonlist2">
             <area>250,85,535,240</area>
-            <buttonarea>0,0,535,210</buttonarea>
+            <buttonarea>0,0,535,220</buttonarea>
             <wrapstyle>selection</wrapstyle>
             <spacing>0</spacing>
             <searchposition>-1,390</searchposition>
@@ -250,20 +250,20 @@
                         <state name="marked"></state>
                     </statetype>
                     <textarea name="titlesubtitle" from="buttontext">
-                        <area>32,0,343,30</area>
+                        <area>32,0,325,30</area>
                         <align>vcenter</align>
                     </textarea>
                     <textarea name="watchedpercent" from="buttontext">
-                        <area>375,0,45,30</area>
+                        <area>335,0,51,30</area>
                         <align>right,vcenter</align>
                         <template>%|watchedpercent|%%</template>
                      </textarea>
                     <textarea name="shortstartdate" from="buttontext">
-                        <area>420,0,40,30</area>
+                        <area>389,0,53,30</area>
                         <align>right,vcenter</align>
                     </textarea>
                     <textarea name="starttime" from="buttontext">
-                        <area>460,0,70,30</area>
+                        <area>444,0,86,30</area>
                         <align>right,vcenter</align>
                     </textarea>
                     <statetype name="watched">
@@ -306,19 +306,19 @@
                         <align>vcenter</align>
                     </textarea>
                     <textarea name="titlesubtitle" from="fonts">
-                        <area>32,0,343,30</area>
+                        <area>32,0,325,30</area>
                     </textarea>
                     <textarea name="watchedpercent" from="fonts">
-                        <area>375,0,45,30</area>
+                        <area>335,0,51,30</area>
                         <align>right,vcenter</align>
                         <template>%|watchedpercent|%%</template>
                      </textarea>
                     <textarea name="shortstartdate" from="fonts">
-                        <area>420,0,40,30</area>
+                        <area>389,0,53,30</area>
                         <align>right,vcenter</align>
                     </textarea>
                     <textarea name="starttime" from="fonts">
-                        <area>460,0,70,30</area>
+                        <area>444,0,86,30</area>
                         <align>right,vcenter</align>
                     </textarea>
                 </state>
