@@ -3208,7 +3208,7 @@ MythMenu* PlaybackBox::createJobMenu()
         bool running = JobQueue::IsJobQueuedOrRunning(
             kJobs[i], pginfo->GetChanID(), pginfo->GetRecordingStartTime());
 
-        MythMenu *submenu = ((kJobs[i] == JOB_TRANSCODE) && running)
+        MythMenu *submenu = ((kJobs[i] == JOB_TRANSCODE) && !running)
             ? createTranscodingProfilesMenu() : nullptr;
         menu->AddItem((running) ? stop_desc : start_desc,
                       kMySlots[i * 2 + (running ? 0 : 1)], submenu);
@@ -5472,7 +5472,7 @@ void RecMetadataEdit::QueryComplete(MetadataLookup *lookup)
     m_episodeSpin->SetValue(lookup->GetEpisode());
     if (!lookup->GetSubtitle().isEmpty())
     {
-        m_descriptionEdit->SetText(lookup->GetSubtitle());
+        m_subtitleEdit->SetText(lookup->GetSubtitle());
     }
     if (!lookup->GetDescription().isEmpty())
     {

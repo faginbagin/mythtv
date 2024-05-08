@@ -2717,12 +2717,18 @@ void TV::PrepToSwitchToRecordedProgram(const ProgramInfo &ProgInfo)
 void TV::PrepareToExitPlayer(int Line)
 {
     m_playerContext.LockDeletePlayer(__FILE__, Line);
-    if (m_savePosOnExit && m_player && m_playerContext.m_playingInfo)
+    if ((m_savePosOnExit || m_clearPosOnExit) && m_player && m_playerContext.m_playingInfo)
     {
         // Clear last play position when we're at the end of a recording.
         // unless the recording is in-progress.
         bool at_end = !StateIsRecording(m_playerContext.GetState()) &&
                 (GetEndOfRecording() || m_playerContext.m_player->IsNearEnd());
+
+        // Clear last play position on exit when the user requested this
+        if (m_clearPosOnExit)
+        {
+            at_end = true;
+        }
 
         // Clear/Save play position without notification
         // The change must be broadcast when file is no longer in use
@@ -2905,11 +2911,12 @@ void TV::HandleSpeedChangeTimerEvent()
 /// 2021, this filter is only used to redirect some events from the
 /// MythMainWindow object to the TV object.
 ///
-/// \warning If an event will be received by both the MythMainWindow object
-/// and the TV object, block it instead of redirecting it. Redirecting it
-/// just causes the event to be handled twice, once in the direct call from
-/// Qt to TV::event and once in the call from Qt to this function to
-/// TV::event.
+/// \warning Be careful if an event is broadcast to all objects
+/// instead of being set directly to a specific object.  For a
+/// broadcast event, Qt will: 1) call TV::customEvent, and 2) call
+/// this function to find out whether it should call
+/// MythMainWindow::customEvent. If this function calls
+/// TV::customEvent, then the same event gets processed twice.
 ///
 /// \param  Object The QObject whose events are being filtered.
 /// \param  Event  The QEvent that is about to be passed to Object->event().
@@ -2944,8 +2951,7 @@ bool TV::eventFilter(QObject* Object, QEvent* Event)
         Event->type() == MythEvent::kUpdateTvProgressEventType ||
         Event->type() == MythMediaEvent::kEventType)
     {
-        // DO NOT call TV::customEvent here!
-        // customEvent(Event);
+        customEvent(Event);
         return true;
     }
 
@@ -3898,6 +3904,10 @@ bool TV::ActiveHandleAction(const QStringList &Actions,
             {
                 ShowOSDStopWatchingRecording();
                 return handled;
+            }
+            if (16 & m_dbPlaybackExitPrompt)
+            {
+                m_clearPosOnExit = true;
             }
             PrepareToExitPlayer(__LINE__);
             m_requestDelete = false;
@@ -5946,19 +5956,20 @@ static uint get_chanid(const PlayerContext *ctx,
 {
     uint chanid = 0;
     uint cur_sourceid = 0;
+
     // try to find channel on current input
     if (ctx && ctx->m_playingInfo && ctx->m_playingInfo->GetSourceID())
     {
         cur_sourceid = ctx->m_playingInfo->GetSourceID();
-        chanid = std::max(static_cast<uint>(ChannelUtil::GetChanID(cur_sourceid, channum)), 0U);
+        chanid = std::max(ChannelUtil::GetChanID(cur_sourceid, channum), 0);
         if (chanid)
             return chanid;
     }
-    // try to find channel on specified input
 
+    // try to find channel on specified input
     uint sourceid = CardUtil::GetSourceID(cardid);
     if (cur_sourceid != sourceid && sourceid)
-        chanid = std::max(static_cast<uint>(ChannelUtil::GetChanID(sourceid, channum)), 0U);
+        chanid = std::max(ChannelUtil::GetChanID(sourceid, channum), 0);
     return chanid;
 }
 
@@ -9811,6 +9822,8 @@ void TV::ShowOSDStopWatchingRecording()
 
     dialog.m_buttons.push_back({tr("Exit %1").arg(videotype), ACTION_STOP});
 
+    dialog.m_buttons.push_back({tr("Exit Without Saving"), "DIALOG_VIDEOEXIT_CLEARLASTPLAYEDPOSITION_0"});
+
     if (IsDeleteAllowed())
         dialog.m_buttons.push_back({tr("Delete this recording"), "DIALOG_VIDEOEXIT_CONFIRMDELETE_0"});
 
@@ -9957,6 +9970,12 @@ bool TV::HandleOSDVideoExit(const QString& Action)
     else if (Action == "KEEPWATCHING" && !near_end)
     {
         DoTogglePause(true);
+    }
+    else if (Action == "CLEARLASTPLAYEDPOSITION")
+    {
+        m_clearPosOnExit = true;
+        PrepareToExitPlayer(__LINE__);
+        SetExitPlayer(true, true);
     }
 
     return hide;

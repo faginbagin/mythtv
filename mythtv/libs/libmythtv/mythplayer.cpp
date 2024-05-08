@@ -1448,7 +1448,7 @@ long long MythPlayer::CalcRWTime(long long rw) const
         return rw;
     }
 
-    auto seconds = secondsFromFloat((m_framesPlayed - rw) / m_videoFrameRate);
+    auto seconds = secondsFromFloat(((int64_t)m_framesPlayed - rw) / m_videoFrameRate);
     m_playerCtx->m_tvchain->JumpToNext(false, seconds);
 
     return -1;
@@ -1481,8 +1481,8 @@ long long MythPlayer::CalcMaxFFTime(long long ffframes, bool setjump) const
         {
             ret = -1;
             // Number of frames to be skipped is from the end of the current segment
-            auto seconds = secondsFromFloat((m_totalFrames - m_framesPlayed - ffframes)
-                                                          / m_videoFrameRate);
+            int64_t frames = (int64_t)m_totalFrames - (int64_t)m_framesPlayed - ffframes;
+            auto seconds = secondsFromFloat(frames / m_videoFrameRate);
             m_playerCtx->m_tvchain->JumpToNext(true, seconds);
         }
     }
