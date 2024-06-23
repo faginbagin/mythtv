@@ -438,11 +438,11 @@
         </textarea>
 
         <textarea name="channel" from="basetextarea">
-            <area>30,444,256,30</area>
+            <area>30,444,250,30</area>
         </textarea>
 
         <textarea name="timedate" from="basetextarea">
-            <area>295,444,415,30</area>
+            <area>280,444,435,30</area>
             <align>hcenter</align>
 	    <!-- <template>%startdate%, %starttime% </template> -->
         </textarea>
