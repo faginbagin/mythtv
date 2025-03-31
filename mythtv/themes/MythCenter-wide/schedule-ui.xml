@@ -506,8 +506,10 @@
         </textarea>
 
         <buttonlist name="schedules" from="basebuttonlist2">
-            <area>30,64,1220,374</area>
+            <area>30,60,1220,374</area>
             <buttonarea>0,0,1200,374</buttonarea>
+            <spacing>0</spacing>
+            <searchposition>-1,450</searchposition>
             <statetype name="buttonitem">
                 <area>0,0,1200,28</area>
                 <state name="active">
@@ -1063,7 +1065,7 @@
         </textarea>
 
         <buttonlist name="proglist" from="basebuttonlist2">
-            <area>30,62,1220,374</area>
+            <area>30,60,1220,374</area>
             <buttonarea>0,0,1200,374</buttonarea>
             <spacing>0</spacing>
             <searchposition>-1,450</searchposition>
@@ -1378,14 +1380,14 @@
         </shape>
 
         <buttonlist name="alphabet" from="basebuttonlist2">
-            <area>72,394,76,286</area>
+            <area>72,400,76,286</area>
             <scrollstyle>center</scrollstyle>
             <spacing>0</spacing>
             <buttonarea>0,0,76,286</buttonarea>
             <statetype name="buttonitem">
                 <state name="active">
                     <textarea name="buttontext" from="basetextarea">
-                        <area>0,0,76,26</area>
+                        <area>0,0,76,27</area>
                         <align>allcenter</align>
                         <font>basesmall_normal</font>
                     </textarea>
@@ -1427,12 +1429,12 @@
         </buttonlist>
 
         <buttonlist name="shows" from="alphabet">
-            <area>176,394,590,284</area>
+            <area>176,400,590,286</area>
             <statetype name="buttonitem">
-                <area>0,0,580,26</area>
+                <area>0,0,580,27</area>
                 <state name="active">
                     <textarea name="buttontext">
-                        <area>4,0,572,26</area>
+                        <area>4,0,572,27</area>
                         <font>basesmall_normal</font>
                         <cutdown>yes</cutdown>
                         <align>left,vcenter</align>
@@ -1448,12 +1450,12 @@
         </buttonlist>
 
         <buttonlist name="times" from="alphabet">
-            <area>810,394,350,284</area>
+            <area>810,400,350,286</area>
             <statetype name="buttonitem">
-                <area>0,0,30,26</area>
+                <area>0,0,30,27</area>
                 <state name="active">
                     <textarea name="buttontext">
-                        <area>34,0,330,26</area>
+                        <area>34,0,330,27</area>
                         <font>basesmall_normal</font>
                         <cutdown>no</cutdown>
                         <align>left,vcenter</align>
@@ -1466,7 +1468,7 @@
                 </state>
                 <state name="selectedactive" from="active">
                     <textarea name="buttontext">
-                        <area>34,0,330,26</area>
+                        <area>34,0,330,27</area>
                         <font>basesmall_normal_selected</font>
                         <cutdown>no</cutdown>
                         <align>left,vcenter</align>
