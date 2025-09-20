@@ -123,10 +123,9 @@ class MythTVMenuNodeTuple
   public:
     // orig
     MythTVMenuNodeTuple(MenuTypeId Id, const QDomNode& Node);
-    MythTVMenuNodeTuple();
     // new
     MythTVMenuNodeTuple(MenuTypeId Id, QString Path);
-    // MythTVMenuNodeTuple() = default;
+    MythTVMenuNodeTuple() = default;
     // test
     MythTVMenuNodeTuple(MenuTypeId Id, const QDomNode& Node, QString Path);
 

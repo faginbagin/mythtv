@@ -370,10 +370,4 @@ MythTVMenuNodeTuple::MythTVMenuNodeTuple(MenuTypeId Id, const QDomNode& Node, QS
 {
 }
 
-// test
-MythTVMenuNodeTuple::MythTVMenuNodeTuple()
-  : m_id(kMenuIdUnknown)
-{
-}
-
 
