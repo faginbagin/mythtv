@@ -1363,6 +1363,7 @@ void TV::GetStatus()
         {
             QList<std::chrono::seconds> chapters;
             m_player->GetChapterTimes(chapters);
+	    LOG(VB_PLAYBACK, LOG_DEBUG, LOC + "totalchapters not empty");
             QVariantList var;
             for (std::chrono::seconds chapter : qAsConst(chapters))
                 var << QVariant((long long)chapter.count());
@@ -5261,12 +5262,15 @@ int TV::GetNumChapters()
     if (m_player)
         num_chapters = m_player->GetNumChapters();
     m_playerContext.UnlockDeletePlayer(__FILE__, __LINE__);
+    LOG(VB_PLAYBACK, LOG_DEBUG, LOC +
+	    QString("numChapters=%1").arg(num_chapters));
     return num_chapters;
 }
 
 void TV::GetChapterTimes(QList<std::chrono::seconds> &Times)
 {
     m_playerContext.LockDeletePlayer(__FILE__, __LINE__);
+    LOG(VB_PLAYBACK, LOG_DEBUG, LOC);
     if (m_player)
         m_player->GetChapterTimes(Times);
     m_playerContext.UnlockDeletePlayer(__FILE__, __LINE__);
@@ -5276,6 +5280,7 @@ int TV::GetCurrentChapter()
 {
     int chapter = 0;
     m_playerContext.LockDeletePlayer(__FILE__, __LINE__);
+    LOG(VB_PLAYBACK, LOG_DEBUG, LOC);
     if (m_player)
         chapter = m_player->GetCurrentChapter();
     m_playerContext.UnlockDeletePlayer(__FILE__, __LINE__);
@@ -5292,6 +5297,8 @@ void TV::DoJumpChapter(int Chapter)
     UpdateOSDSeekMessage(tr("Jump Chapter"), kOSDTimeout_Med);
 
     m_playerContext.LockDeletePlayer(__FILE__, __LINE__);
+    LOG(VB_PLAYBACK, LOG_DEBUG, LOC +
+	QString("Chapter=%1").arg(Chapter));
     if (m_player)
         m_player->JumpChapter(Chapter);
     m_playerContext.UnlockDeletePlayer(__FILE__, __LINE__);
@@ -7111,6 +7118,7 @@ const MythTVMenu& TV::getMenuFromId(MenuTypeId id)
     case kMenuIdCutlistCompact:
         return m_cutlistCompactMenu;
     default:
+	LOG(VB_PLAYBACK, LOG_INFO, "dummy_menubase");
         return dummy_menubase;
     }
 }
@@ -7163,10 +7171,22 @@ void TV::customEvent(QEvent *Event)
         {
             auto data = dce->GetData().value<MythTVMenuNodeTuple>();
             const MythTVMenu& Menu = getMenuFromId(data.m_id);
+	    // ZZZ compare Node to data.m_node
+            QDomNode Node = Menu.GetNodeFromPath(data.m_path);
             if (dce->GetResult() == -1) // menu exit/back
+	    {
                 PlaybackMenuShow(Menu, data.m_node.parentNode(), data.m_node);
+                /* new
+                PlaybackMenuShow(Menu, Node.parentNode(), Node);
+                */
+	    }
             else
+	    {
                 PlaybackMenuShow(Menu, data.m_node, QDomNode());
+                /* new
+                PlaybackMenuShow(Menu, Node, QDomNode());
+                */
+	    }
         }
         else
         {
@@ -8224,6 +8244,9 @@ void TV::OSDDialogEvent(int Result, const QString& Text, QString Action)
         else if (Action.startsWith(ACTION_JUMPCHAPTER))
         {
             int chapter = Action.right(3).toInt();
+	    LOG(VB_PLAYBACK, LOG_DEBUG, LOC +
+		    QString("chapter=%1 Action=%2")
+		    .arg(chapter).arg(Action));
             DoJumpChapter(chapter);
         }
         else if (Action.startsWith(ACTION_SWITCHTITLE))
@@ -8342,7 +8365,15 @@ bool TV::MenuItemDisplayCutlist(const MythTVMenuItemContext& Context, MythOSDDia
         if (result && Context.m_doDisplay)
         {
             QVariant v;
+	    /* ZZZ
+	    /* orig
             v.setValue(MythTVMenuNodeTuple(Context.m_menu.m_id, Context.m_node));
+	    /* new
+            v.setValue(MythTVMenuNodeTuple(Context.m_menu.m_id,
+                                           MythTVMenu::GetPathFromNode(Context.m_node)));
+	    */
+	    // test
+	    v.setValue(MythTVMenuNodeTuple(Context.m_menu.m_id, Context.m_node, MythTVMenu::GetPathFromNode(Context.m_node)));
             Menu->m_buttons.push_back( { Context.m_menuName, v, true,
                                          Context.m_currentContext != kMenuCurrentDefault });
         }
@@ -8478,7 +8509,15 @@ bool TV::MenuItemDisplayPlayback(const MythTVMenuItemContext& Context, MythOSDDi
         if (result && Context.m_doDisplay)
         {
             QVariant v;
+	    /* ZZZ
+	    /* orig
             v.setValue(MythTVMenuNodeTuple(Context.m_menu.m_id, Context.m_node));
+	    /* new
+            v.setValue(MythTVMenuNodeTuple(Context.m_menu.m_id,
+                                           MythTVMenu::GetPathFromNode(Context.m_node)));
+	    */
+	    // test
+	    v.setValue(MythTVMenuNodeTuple(Context.m_menu.m_id, Context.m_node, MythTVMenu::GetPathFromNode(Context.m_node)));
             Menu->m_buttons.push_back( { Context.m_menuName, v, true,
                                          Context.m_currentContext != kMenuCurrentDefault } );
         }
@@ -8654,6 +8693,8 @@ bool TV::MenuItemDisplayPlayback(const MythTVMenuItemContext& Context, MythOSDDi
     }
     else if (MythTVMenu::MatchesGroup(actionName, "JUMPTOCHAPTER", category, prefix))
     {
+	LOG(VB_PLAYBACK, LOG_DEBUG, LOC +
+		QString("m_tvmNumChapters=%1 m_tvmChapterTimes.size()=%2").arg(m_tvmNumChapters).arg(m_tvmChapterTimes.size()));
         if (m_tvmNumChapters &&
             m_tvmNumChapters == m_tvmChapterTimes.size())
         {
@@ -8666,6 +8707,9 @@ bool TV::MenuItemDisplayPlayback(const MythTVMenuItemContext& Context, MythOSDDi
                 QString desc = chapter1 + QString(" (%1)").arg(timestr);
                 QString action = prefix + chapter2;
                 active = (m_tvmCurrentChapter == (i + 1));
+		LOG(VB_PLAYBACK, LOG_DEBUG, LOC +
+			QString("action=%1 desc=%2 active=%3")
+			.arg(action).arg(desc).arg(active));
                 BUTTON(action, desc);
             }
         }
@@ -8924,7 +8968,15 @@ bool TV::MenuItemDisplayPlayback(const MythTVMenuItemContext& Context, MythOSDDi
         {
             BUTTON3(actionName, tr("Recorded Program"), "", true);
             QVariant v;
+	    /* ZZZ
+	    /* orig
             v.setValue(MythTVMenuNodeTuple(Context.m_menu.m_id, Context.m_node));
+	    /* new
+            v.setValue(MythTVMenuNodeTuple(Context.m_menu.m_id,
+                                           MythTVMenu::GetPathFromNode(Context.m_node)));
+	    */
+	    // test
+	    v.setValue(MythTVMenuNodeTuple(Context.m_menu.m_id, Context.m_node, MythTVMenu::GetPathFromNode(Context.m_node)));
             m_tvmJumprecBackHack = v;
         }
         else if (actionName == "JUMPPREV")
@@ -9060,6 +9112,9 @@ void TV::PlaybackMenuInit(const MythTVMenu &Menu)
     m_tvmCurrentTitle   = GetCurrentTitle();
     m_tvmChapterTimes.clear();
     GetChapterTimes(m_tvmChapterTimes);
+    LOG(VB_PLAYBACK, LOG_DEBUG, LOC + 
+	QString("m_tvmNumChapters=%1 m_tvmCurrentChapter=%2")
+	    .arg(m_tvmNumChapters).arg(m_tvmCurrentChapter));
 
     m_tvmSubsForcedOn  = true;
     m_tvmSubsHaveSubs  = false;
@@ -9132,7 +9187,14 @@ void TV::PlaybackMenuShow(const MythTVMenu &Menu, const QDomNode &Node, const QD
     if (!parent.parentNode().isNull())
     {
         QVariant v;
+	/* ZZZ
+	/* orig
         v.setValue(MythTVMenuNodeTuple(Menu.m_id, Node));
+	/* new
+        v.setValue(MythTVMenuNodeTuple(Menu.m_id, MythTVMenu::GetPathFromNode(Node)));
+	*/
+	// test
+	v.setValue(MythTVMenuNodeTuple(Menu.m_id, Node, MythTVMenu::GetPathFromNode(Node)));
         menu.m_back = { "", v };
     }
 
